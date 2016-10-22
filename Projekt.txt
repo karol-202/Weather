@@ -1,0 +1,59 @@
+﻿#1. Struktura pojedynczego rekordu:
+	Rekord ma na celu przechowywanie danych dotyczących pogody w danym momencie czasu.
+	* time(int/unsigned long, liczba 4 bajty) - czas rekordu w sekundach
+	* temperature(byte) - temperatura -128 - 127
+	* humidity(byte) - wilgotność -128 - 127
+#2. Protokół komunikacyjny:
+	A. Komunikaty:
+		1. SET_TIME(1) - komunikat presyłający aktualny czas z komputera do Arduino,
+						 na czas wykonywania którego, zapalana jest dioda LED
+			Struktura: 1, x, x, x, x
+				x - to liczba(4 bajty) zawierająca aktualny czas w sekundach
+		2. SAVE_TIME(2) - komunikat rozkazujący Arduino zapisanie aktualnego czasu do pamięci
+			Struktura: 2
+		3. GET_DATA(3) - komunikat rozkazujący Arduino wysłanie wszystkich rekordów do komputera
+			Struktura: 3
+			Po odebraniu komunikatu przez Arduino, następuje przesłanie danych w następującym formacie:
+				l - ilość rekordów
+				l, { czas(4 bajty), temperatura, wilogotność } l razy
+		4. MESSAGE_RESET(4) - komunikat rozkazujący Arduino wymazać wszystkie dane z pamięci
+			Struktura: 4
+	B. Sposób połączenia
+		1. Połączenie nawiązywane jest za pomocą portu szeregowego (USB).
+		2. Preferowana nazwa połączenia to Weather
+		3. Obowiązują następujące parametry komunkacji za pośrednictwem portu szeregowego:
+			* BAUD_RATE: 9600
+			* 8 bitów danych
+			* 1 bit stopu
+			* brak kontroli parzystości
+#3. Arduino:
+	A. Działanie:
+		a) Start:
+			1. Inicializacja portu szeregowego
+			2. Inicjalizacja czjunika DHT11 na pinie 8
+			3. Incializacja pinów:
+				* LED(13) - wyjście
+			4. Odczyt aktualnego czasu z pamięci
+		b) Pętla główna:
+			1. Zebranie porcji danych, świecenie LED przez 1s
+			2. Odczyt komunikatów z portu szeregowego
+			3. Zebranie porcji danych po upływie 30min
+	B. Pamięć EPROM - struktura:
+		l - długość pamięci
+		0 - l-8   rekordy
+		l-7 - l-4   aktualny czas
+		l-3 - l-2   wartość sprawdzająca, czy pamięć jest pusta, 255 - pusta, 0 - niepusta
+		l-1 - l-0   ilość rekordów
+#4. Komputer
+	1. Aplikacja nawiązuje połączenie z Arduino zgodnie
+		z protokołem opisanym w podpunkcie B punktu #2.
+	2. Po połączeniu z Arduino, użytkownik ma do dyspozycji następujące czynności:
+	
+		* Wysłanie aktualnego czasu do Arduino zgodnie z komunikatem SET_TIME.
+		* Żądanie zapisania aktualnego czasu do pamięci Arduino zgodnie z komunikatem SAVE_TIME.
+		* Pobranie danych z Arduino zgodnie z komunikatem GET_DATA.
+		* Żądanie wymazania danych z pamięci Arduino.
+	3. Dane pobrane z Arduino zgodnie z komunikatem GET_DATA są zapisywane w pliku data.dat.
+		Jego format może być dowolny.
+	4. Dane z pliku data.dat są ładowane podczas włączania
+		programu i wyświetlane w postaci czytelnej dla użytkownika.
