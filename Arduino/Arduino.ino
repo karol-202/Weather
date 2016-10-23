@@ -3,8 +3,6 @@
 #include <Time.h>
 
 #define PIN_DHT 8
-#define PIN_CONNECT 9
-#define PIN_RESET 2
 #define PIN_LED 13
 
 #define MESSAGE_SET_TIME 1
@@ -19,15 +17,13 @@ struct Record
   byte humidity;
 };
 
-DHT dht(8, DHT11);
-const int measureDelay = 60 * 30;
+DHT dht(PIN_DHT, DHT11);
+const int measureDelay = 60 * 30; //30 minut
 
 void setup()
 {
   Serial.begin(9600);
   dht.begin();
-  pinMode(PIN_CONNECT, INPUT_PULLUP);
-  pinMode(PIN_RESET, INPUT_PULLUP);
   pinMode(PIN_LED, OUTPUT);
 
   int addrTime = EEPROM.length() - 7;
@@ -52,7 +48,7 @@ void loop()
       switch(message)
       {
       case MESSAGE_SET_TIME:
-        readTime();
+        updateTime();
         break;
       case MESSAGE_SAVE_TIME:
       {
@@ -67,24 +63,30 @@ void loop()
         clearAll();
         break;
       case 65:
-        for(int i = 0; i < 1024; i++) Serial.println(EEPROM.read(i));
+        for(int i = 0; i < 1024; i++) Serial.write(EEPROM.read(i));
       }
     }
-    delay(500);
+    delay(500); //Czekaj 0.5s przed kolejnym sprawdzeniem
   }
 }
 
-void readTime()
+void updateTime()
 {
-  while(Serial.available() != 4) delay(10);
-  time_t time = bytesToLong(Serial.read(), Serial.read(), Serial.read(), Serial.read());
+  digitalWrite(PIN_LED, HIGH);
+  while(Serial.available() < 4) delay(10);
+  int first = Serial.read();
+  int second = Serial.read();
+  int third = Serial.read();
+  int fourth = Serial.read();
+  time_t time = bytesToLong(first, second, third, fourth);
   setTime(time);
+  digitalWrite(PIN_LED, LOW);
 }
 
 void sendData()
 {
   int length = getLength();
-  Serial.write(length);
+  Serial.write((byte) length);
   for(int i = 0; i < length; i++)
   {
     int addr = i * sizeof(Record);
@@ -131,21 +133,23 @@ int getLength()
 
 void clearAll()
 {
+  digitalWrite(PIN_LED, HIGH);
   for(int i = 0; i < EEPROM.length(); i++) EEPROM.update(i, 255);
+  digitalWrite(PIN_LED, LOW);
 }
 
 unsigned long bytesToLong(int first, int second, int third, int fourth)
 {
-  return (((unsigned long) first  << 24) & 0xff000000) |
-         (((unsigned long) second << 16) & 0xff0000) |
-         (((unsigned long) third  << 8 ) & 0xff00) |
-          ((unsigned long) fourth        & 0xff);
+  return ((unsigned long) first         & 0xff) |
+        (((unsigned long) second << 8 ) & 0xff00) |
+        (((unsigned long) third  << 16) & 0xff0000) |
+        (((unsigned long) fourth << 24) & 0xff000000);      
 }
 
 void longToBytes(unsigned long number, byte* bytes)
 {
-  bytes[0] = (number >> 24) & 0xff;
-  bytes[1] = (number >> 16) & 0xff;
-  bytes[2] = (number >> 8 ) & 0xff;
-  bytes[3] =  number        & 0xff;
+  bytes[0] =  number        & 0xff;
+  bytes[1] = (number >> 8 ) & 0xff;
+  bytes[2] = (number >> 16) & 0xff;
+  bytes[3] = (number >> 24) & 0xff;
 }
