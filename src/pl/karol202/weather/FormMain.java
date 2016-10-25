@@ -3,8 +3,12 @@ package pl.karol202.weather;
 import pl.karol202.weather.Connector.ConnectionListener;
 
 import javax.swing.*;
+import java.awt.event.KeyEvent;
+import java.awt.event.KeyListener;
 import java.util.ArrayList;
 import java.util.Date;
+
+import static pl.karol202.weather.RecordsManager.getRecordsMeasure;
 
 public class FormMain extends JFrame implements ConnectionListener
 {
@@ -45,13 +49,35 @@ public class FormMain extends JFrame implements ConnectionListener
 	{
 		RecordsManager.init();
 		
-		tableModelMeasure = new RecordsTableModel(RecordsManager.getRecordsMeasure());
+		tableModelMeasure = new RecordsTableModel(getRecordsMeasure());
 		tableModelMeasure.addTableModelListener(e -> RecordsManager.save());
 		tableMeasurement = new JTable(tableModelMeasure);
-		tableMeasurement.setRowSelectionAllowed(false);
+		tableMeasurement.setRowSelectionAllowed(true);
 		tableMeasurement.setColumnSelectionAllowed(false);
 		tableMeasurement.getTableHeader().setReorderingAllowed(false);
 		tableMeasurement.setDefaultRenderer(Date.class, new RecordsTableRenderer());
+		tableMeasurement.addKeyListener(new KeyListener() {
+			@Override
+			public void keyTyped(KeyEvent e) { }
+			
+			@Override
+			public void keyPressed(KeyEvent e) { }
+			
+			@Override
+			public void keyReleased(KeyEvent e)
+			{
+				if(e.getKeyCode() != KeyEvent.VK_DELETE) return;
+				
+				int deleted = 0;
+				for(int row : tableMeasurement.getSelectedRows())
+				{
+					RecordsManager.getRecordsMeasure().remove(row - deleted);
+					deleted++;
+				}
+				RecordsManager.save();
+				tableModelMeasure.fireTableDataChanged();
+			}
+		});
 	}
 	
 	private void initPorts()
@@ -139,7 +165,7 @@ public class FormMain extends JFrame implements ConnectionListener
 	@Override
 	public void onDataReceive(ArrayList<Record> newRecords)
 	{
-		ArrayList<Record> records = RecordsManager.getRecordsMeasure();
+		ArrayList<Record> records = getRecordsMeasure();
 		newRecords.forEach(newRec -> {
 			if(!records.contains(newRec)) records.add(newRec);
 		});

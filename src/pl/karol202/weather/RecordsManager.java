@@ -29,25 +29,8 @@ public class RecordsManager
 	{
 		try(InputStream stream = new FileInputStream(file))
 		{
-			recordsMeasure.clear();
-			int lengthMeasure = stream.read();
-			for(int i = 0; i < lengthMeasure; i++)
-			{
-				long time = readLong(stream);
-				int temperature = stream.read();
-				int humidity = stream.read();
-				recordsMeasure.add(new Record(time, temperature, humidity));
-			}
-			
-			recordsForecast.clear();
-			int lengthForecast = stream.read();
-			for(int i = 0; i < lengthForecast; i++)
-			{
-				long time = readLong(stream);
-				int temperature = stream.read();
-				int humidity = stream.read();
-				recordsForecast.add(new Record(time, temperature, humidity));
-			}
+			loadRecordsToList(stream, recordsMeasure);
+			loadRecordsToList(stream, recordsForecast);
 		}
 		catch(IOException e)
 		{
@@ -55,29 +38,40 @@ public class RecordsManager
 		}
 	}
 	
+	private static void loadRecordsToList(InputStream stream, ArrayList<Record> records) throws IOException
+	{
+		records.clear();
+		int lengthMeasure = stream.read();
+		for(int i = 0; i < lengthMeasure; i++)
+		{
+			int time = DataUtils.bytesToInt(stream);
+			int temperature = stream.read();
+			int humidity = stream.read();
+			records.add(new Record(time, temperature, humidity));
+		}
+	}
+	
 	public static void save()
 	{
 		try(OutputStream stream = new FileOutputStream(file))
 		{
-			stream.write(recordsMeasure.size());
-			for(Record record : recordsMeasure)
-			{
-				stream.write(longToBytes(record.getTime()));
-				stream.write(record.getTemperature());
-				stream.write(record.getHumidity());
-			}
-			
-			stream.write(recordsForecast.size());
-			for(Record record : recordsForecast)
-			{
-				stream.write(longToBytes(record.getTime()));
-				stream.write(record.getTemperature());
-				stream.write(record.getHumidity());
-			}
+			saveRecordsToList(stream, recordsMeasure);
+			saveRecordsToList(stream, recordsForecast);
 		}
 		catch(IOException e)
 		{
 			e.printStackTrace();
+		}
+	}
+	
+	private static void saveRecordsToList(OutputStream stream, ArrayList<Record> records) throws IOException
+	{
+		stream.write(records.size());
+		for(Record record : records)
+		{
+			stream.write(DataUtils.intToBytes(record.getTimeInSeconds()));
+			stream.write(record.getTemperature());
+			stream.write(record.getHumidity());
 		}
 	}
 	
@@ -89,23 +83,5 @@ public class RecordsManager
 	public static ArrayList<Record> getRecordsForecast()
 	{
 		return recordsForecast;
-	}
-	
-	private static long readLong(InputStream stream) throws IOException
-	{
-		return ((stream.read() << 24) & 0xff000000) |
-				((stream.read() << 16) & 0xff0000) |
-				((stream.read() << 8 ) & 0xff00) |
-				(stream.read()        & 0xff);
-	}
-	
-	private static byte[] longToBytes(long number)
-	{
-		byte[] bytes = new byte[4];
-		bytes[0] = (byte) ((number >> 24) & 0xff);
-		bytes[1] = (byte) ((number >> 16) & 0xff);
-		bytes[2] = (byte) ((number >> 8 ) & 0xff);
-		bytes[3] = (byte)  (number        & 0xff);
-		return bytes;
 	}
 }

@@ -67,7 +67,6 @@ public class Connector implements SerialPortEventListener
 	{
 		this.portId = portId;
 		this.listener = listener;
-		
 		try
 		{
 			port = (SerialPort) portId.open("Weather", TIMEOUT);
@@ -107,10 +106,10 @@ public class Connector implements SerialPortEventListener
 	{
 		try
 		{
-			System.out.println(new Date().getTime());
-			long time = new Date().getTime() / 1000;
+			System.out.println("Current date/time: " + new Date().getTime());
+			int time = (int) (new Date().getTime() / 1000);
 			outputStream.write(MESSAGE_SET_TIME);
-			outputStream.write(longToBytes(time));
+			outputStream.write(DataUtils.intToBytes(time));
 		}
 		catch(IOException e)
 		{
@@ -168,7 +167,17 @@ public class Connector implements SerialPortEventListener
 			try
 			{
 				waitForData = false;
-				ArrayList<Record> records = Record.decodeRecord(inputStream);
+				ArrayList<Record> records = new ArrayList<>();
+				int length = inputStream.read();
+				System.out.println("Got new records: " + length);
+				for(int i = 0; i < length; i++)
+				{
+					int time = DataUtils.bytesToInt(inputStream);
+					System.out.println(time / 1000);
+					int temperature = inputStream.read();
+					int humidity = inputStream.read();
+					records.add(new Record(time, temperature, humidity));
+				}
 				listener.onDataReceive(records);
 			}
 			catch(IOException e)
@@ -194,19 +203,5 @@ public class Connector implements SerialPortEventListener
 	public CommPortIdentifier getPortId()
 	{
 		return portId;
-	}
-	
-	private byte[] longToBytes(long number)
-	{
-		byte[] bytes = new byte[4];
-		bytes[0] = (byte) ((number >> 24) & 0xff);
-		bytes[1] = (byte) ((number >> 16) & 0xff);
-		bytes[2] = (byte) ((number >> 8 ) & 0xff);
-		bytes[3] = (byte)  (number        & 0xff);
-		System.out.println(bytes[0]);
-		System.out.println(bytes[1]);
-		System.out.println(bytes[2]);
-		System.out.println(bytes[3]);
-		return bytes;
 	}
 }

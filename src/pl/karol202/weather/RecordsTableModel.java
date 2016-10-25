@@ -52,7 +52,8 @@ public class RecordsTableModel extends AbstractTableModel
 		switch(columnIndex)
 		{
 		case 0:
-			return new Date(record.getTime());
+			long timeInMillis = ((long) record.getTimeInSeconds()) * 1000;
+			return new Date(timeInMillis);
 		case 1:
 			return record.getTemperature();
 		case 2:
@@ -68,7 +69,8 @@ public class RecordsTableModel extends AbstractTableModel
 		switch(columnIndex)
 		{
 		case 0:
-			record.setTime(((Date) aValue).getTime());
+			int timeInSeconds = (int) (((Date) aValue).getTime() / 1000);
+			record.setTimeInSeconds(timeInSeconds);
 			break;
 		case 1:
 			record.setTemperature((int) aValue);
