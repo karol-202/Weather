@@ -41,14 +41,21 @@ public class RecordsManager
 	private static void loadRecordsToList(InputStream stream, ArrayList<Record> records) throws IOException
 	{
 		records.clear();
-		int lengthMeasure = stream.read();
+		int lengthMeasure = DataUtils.bytesToInt(stream);
 		for(int i = 0; i < lengthMeasure; i++)
 		{
 			int time = DataUtils.bytesToInt(stream);
-			int temperature = stream.read();
-			int humidity = stream.read();
+			int temperature = readByte(stream);
+			int humidity = readByte(stream);
 			records.add(new Record(time, temperature, humidity));
 		}
+	}
+	
+	private static int readByte(InputStream stream) throws IOException
+	{
+		int data = stream.read();
+		if(data == -1) throw new RuntimeException("File reading error: Unexpected end of stream.");
+		return data;
 	}
 	
 	public static void save()
@@ -66,7 +73,7 @@ public class RecordsManager
 	
 	private static void saveRecordsToList(OutputStream stream, ArrayList<Record> records) throws IOException
 	{
-		stream.write(records.size());
+		stream.write(DataUtils.intToBytes(records.size()));
 		for(Record record : records)
 		{
 			stream.write(DataUtils.intToBytes(record.getTimeInSeconds()));
