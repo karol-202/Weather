@@ -24,6 +24,11 @@ public class FormMain extends JFrame implements ConnectionListener
 	private JButton buttonReset;
 	private JComboBox<String> comboBoxPort;
 	private JButton buttonRefresh;
+	private JCheckBox checkBoxMeasure;
+	private JCheckBox checkBoxForecast;
+	private JCheckBox checkBoxTemperature;
+	private JCheckBox checkBoxHumidity;
+	private GraphPanel graph;
 	
 	public FormMain()
 	{
@@ -43,6 +48,11 @@ public class FormMain extends JFrame implements ConnectionListener
 		buttonGetData.addActionListener(e -> onGetDataClick());
 		buttonReset.addActionListener(e -> onResetClick());
 		buttonRefresh.addActionListener(e -> onRefreshClick());
+		
+		checkBoxMeasure.addActionListener(e -> updateGraph());
+		checkBoxForecast.addActionListener(e -> updateGraph());
+		checkBoxTemperature.addActionListener(e -> updateGraph());
+		checkBoxHumidity.addActionListener(e -> updateGraph());
 	}
 	
 	private void createUIComponents()
@@ -171,6 +181,14 @@ public class FormMain extends JFrame implements ConnectionListener
 		});
 		RecordsManager.save();
 		tableModelMeasure.fireTableDataChanged();
+	}
+	
+	private void updateGraph()
+	{
+		graph.setShowMeasurement(checkBoxMeasure.isSelected());
+		graph.setShowForecast(checkBoxForecast.isSelected());
+		graph.setShowTemperature(checkBoxTemperature.isSelected());
+		graph.setShowHumidity(checkBoxHumidity.isSelected());
 	}
 	
 	public static void main(String[] args)
