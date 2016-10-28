@@ -82,6 +82,15 @@ public class RecordsManager
 		}
 	}
 	
+	public static void sort()
+	{
+		recordsMeasure.sort((o1, o2) -> {
+			if(o1.getTimeInSeconds() > o2.getTimeInSeconds()) return 1;
+			else if(o1.getTimeInSeconds() < o2.getTimeInSeconds()) return -1;
+			return 0;
+		});
+	}
+	
 	public static ArrayList<Record> getRecordsMeasure()
 	{
 		return recordsMeasure;

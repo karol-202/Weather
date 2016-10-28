@@ -2,29 +2,40 @@ package pl.karol202.weather;
 
 import javax.swing.*;
 import java.awt.*;
+import java.text.DateFormat;
 import java.util.ArrayList;
+import java.util.Date;
 
 public class GraphPanel extends JPanel
 {
 	private final int MARGIN = 30;
+	private final int SECONDS_IN_DAY = 60 * 60 * 24;
 	
-	private int startTime;
-	private int endTime;
-	private int startTemperature;
-	private int endTemperature;
-	
+	private DateFormat formatter;
 	private boolean showMeasurement;
 	private boolean showForecast;
 	private boolean showTemperature;
 	private boolean showHumidity;
+	private int daysVisible;
+	private int offsetPercent;
+	
+	private int firstRecordTime;
+	private int lastRecordTime;
+	private int lowestTemperature;
+	private int highestTemperature;
+	
+	private int firstVisibleTime;
+	private int lastVisibleTime;
 	
 	public GraphPanel()
 	{
+		this.formatter = DateFormat.getDateTimeInstance();
 		this.showMeasurement = true;
 		this.showForecast = true;
 		this.showTemperature = true;
 		this.showHumidity = true;
-		updateValues();
+		this.daysVisible = 1;
+		this.offsetPercent = 0;
 	}
 	
 	@Override
@@ -34,20 +45,42 @@ public class GraphPanel extends JPanel
 		Graphics2D graphics = (Graphics2D) g;
 		
 		drawGrid(graphics);
+		drawTexts(graphics);
+		g.clipRect(MARGIN, MARGIN, getWidth() - (2 * MARGIN), getHeight() - (2 * MARGIN));
 		drawData(graphics);
 	}
 	
 	private void drawGrid(Graphics2D g)
 	{
-		g.setColor(Color.black);
+		g.setColor(Color.BLACK);
 		g.drawLine(MARGIN, MARGIN, MARGIN, getHeight() - MARGIN);
 		g.drawLine(MARGIN, getHeight() - MARGIN, getWidth() - MARGIN, getHeight() - MARGIN);
+		g.drawLine(getWidth() - MARGIN, MARGIN, getWidth() - MARGIN, getHeight() - MARGIN);
+	}
+	
+	private void drawTexts(Graphics2D g)
+	{
+		g.setColor(Color.RED);
+		String startTemperatureText = Integer.toString(lowestTemperature) + "°";
+		String endTemperatureText = Integer.toString(highestTemperature) + "°";
+		g.drawString(startTemperatureText, MARGIN - 4 - (startTemperatureText.length() * 6), getHeight() - MARGIN + 2);
+		g.drawString(endTemperatureText, MARGIN - 4 - (endTemperatureText.length() * 6), MARGIN + 2);
+		
+		g.setColor(Color.BLUE);
+		g.drawString("0%", getWidth() - MARGIN + 2, getHeight() - MARGIN + 2);
+		g.drawString("100%", getWidth() - MARGIN + 2, MARGIN + 2);
+		
+		g.setColor(Color.BLACK);
+		String startTimeText = formatter.format(new Date((long) firstVisibleTime * 1000));
+		String endTimeText = formatter.format(new Date((long) lastVisibleTime * 1000));
+		g.drawString(startTimeText, MARGIN - 13, getHeight() - MARGIN + 14);
+		g.drawString(endTimeText, getWidth() - MARGIN - 80, getHeight() - MARGIN + 14);
 	}
 	
 	private void drawData(Graphics2D g)
 	{
-		if(showMeasurement) drawRecords(g, RecordsManager.getRecordsMeasure(), Color.RED, Color.BLUE);
-		if(showForecast) drawRecords(g, RecordsManager.getRecordsForecast(), Color.ORANGE, SystemColor.CYAN);
+		if(showMeasurement && RecordsManager.getRecordsMeasure() != null) drawRecords(g, RecordsManager.getRecordsMeasure(), Color.RED, Color.BLUE);
+		if(showForecast && RecordsManager.getRecordsForecast() != null) drawRecords(g, RecordsManager.getRecordsForecast(), Color.ORANGE, SystemColor.CYAN);
 	}
 	
 	private void drawRecords(Graphics2D g, ArrayList<Record> records, Color colorTemperature, Color colorHumidity)
@@ -57,12 +90,12 @@ public class GraphPanel extends JPanel
 		{
 			if(lastRecord != null)
 			{
-				int x = (int) map(startTime, endTime, MARGIN, getWidth() - MARGIN, record.getTimeInSeconds());
-				int lastX = (int) map(startTime, endTime, MARGIN, getWidth() - MARGIN, lastRecord.getTimeInSeconds());
+				int x = (int) map(firstVisibleTime, lastVisibleTime, MARGIN, getWidth() - MARGIN, record.getTimeInSeconds());
+				int lastX = (int) map(firstVisibleTime, lastVisibleTime, MARGIN, getWidth() - MARGIN, lastRecord.getTimeInSeconds());
 				if(showTemperature)
 				{
-					int y = (int) map(startTemperature, endTemperature, getHeight() - MARGIN, MARGIN, record.getTemperature());
-					int lastY = (int) map(startTemperature, endTemperature, getHeight() - MARGIN, MARGIN, lastRecord.getTemperature());
+					int y = (int) map(lowestTemperature, highestTemperature, getHeight() - MARGIN, MARGIN, record.getTemperature());
+					int lastY = (int) map(lowestTemperature, highestTemperature, getHeight() - MARGIN, MARGIN, lastRecord.getTemperature());
 					g.setColor(colorTemperature);
 					g.drawLine(lastX, lastY, x, y);
 				}
@@ -85,10 +118,13 @@ public class GraphPanel extends JPanel
 	
 	public void updateValues()
 	{
-		this.startTime = getFirstRecordTime();
-		this.endTime = getLastRecordTime();
-		this.startTemperature = getSmallestTemperature();
-		this.endTemperature = getLargestTemperature();
+		firstRecordTime = getFirstRecordTime();
+		lastRecordTime = getLastRecordTime();
+		lowestTemperature = getLowestTemperature();
+		highestTemperature = getHighestTemperature();
+		
+		firstVisibleTime = firstRecordTime + Math.round(((lastRecordTime - firstRecordTime) - (SECONDS_IN_DAY * daysVisible)) * (offsetPercent / 100f));
+		lastVisibleTime = firstVisibleTime + (SECONDS_IN_DAY * daysVisible);
 		repaint();
 	}
 	
@@ -112,7 +148,7 @@ public class GraphPanel extends JPanel
 		return last;
 	}
 	
-	private int getSmallestTemperature()
+	private int getLowestTemperature()
 	{
 		int small = Integer.MIN_VALUE;
 		if(showMeasurement) for(Record record : RecordsManager.getRecordsMeasure())
@@ -122,7 +158,7 @@ public class GraphPanel extends JPanel
 		return small;
 	}
 	
-	private int getLargestTemperature()
+	private int getHighestTemperature()
 	{
 		int large = Integer.MIN_VALUE;
 		if(showMeasurement) for(Record record : RecordsManager.getRecordsMeasure())
@@ -130,6 +166,11 @@ public class GraphPanel extends JPanel
 		if(showForecast) for(Record record : RecordsManager.getRecordsForecast())
 			if(large == Integer.MIN_VALUE || record.getTemperature() > large) large = record.getTemperature();
 		return large;
+	}
+	
+	public int getTimeScaleRatio()
+	{
+		return Math.round((float) daysVisible / ((lastRecordTime - firstRecordTime) / SECONDS_IN_DAY) * 100);
 	}
 	
 	public boolean isShowMeasurement()
@@ -173,6 +214,28 @@ public class GraphPanel extends JPanel
 	public void setShowHumidity(boolean showHumidity)
 	{
 		this.showHumidity = showHumidity;
+		updateValues();
+	}
+	
+	public int getDaysVisible()
+	{
+		return daysVisible;
+	}
+	
+	public void setDaysVisible(int daysVisible)
+	{
+		this.daysVisible = daysVisible;
+		updateValues();
+	}
+	
+	public int getOffsetPercent()
+	{
+		return offsetPercent;
+	}
+	
+	public void setOffsetPercent(int offsetPercent)
+	{
+		this.offsetPercent = offsetPercent;
 		updateValues();
 	}
 }
