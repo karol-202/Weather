@@ -2,6 +2,7 @@ package pl.karol202.weather.ui;
 
 import pl.karol202.weather.hardware.Connector;
 import pl.karol202.weather.hardware.Connector.ConnectionListener;
+import pl.karol202.weather.record.ForecastRecord;
 import pl.karol202.weather.record.Record;
 import pl.karol202.weather.record.RecordsManager;
 import pl.karol202.weather.ui.table.*;
@@ -15,8 +16,8 @@ import java.util.Date;
 public class FormMain extends JFrame implements ConnectionListener
 {
 	private Connector connector;
-	private RecordsTableModel tableModelMeasure;
-	private ForecastRecordsTableModel tableModelForecast;
+	private MeasureRecordsTableModel measureTableModel;
+	private ForecastRecordsTableModel forecastTableModel;
 	private SpinnerNumberModel spinnerModelNumber;
 	
 	private JPanel root;
@@ -71,7 +72,7 @@ public class FormMain extends JFrame implements ConnectionListener
 	
 	private void initTabMeasure()
 	{
-		tableModelMeasure = new RecordsTableModel(RecordsManager.getRecordsMeasure());
+		measureTableModel = new MeasureRecordsTableModel(RecordsManager.getMeasureRecords());
 		
 		buttonConnect.addActionListener(e -> onConnectClick());
 		buttonSetTime.addActionListener(e -> onSetTimeClick());
@@ -85,11 +86,13 @@ public class FormMain extends JFrame implements ConnectionListener
 		checkBoxTemperature.addActionListener(e -> updateGraph());
 		checkBoxHumidity.addActionListener(e -> updateGraph());
 		
-		tableMeasurement.setModel(tableModelMeasure);
+		tableMeasurement.setModel(measureTableModel);
 		tableMeasurement.setRowSelectionAllowed(true);
 		tableMeasurement.setColumnSelectionAllowed(false);
 		tableMeasurement.getTableHeader().setReorderingAllowed(false);
 		tableMeasurement.setDefaultRenderer(Date.class, new RecordsTableRenderer());
+		tableMeasurement.getColumnModel().getColumn(1).setMaxWidth(100);
+		tableMeasurement.getColumnModel().getColumn(2).setMaxWidth(90);
 		tableMeasurement.addKeyListener(new KeyListener()
 		{
 			@Override
@@ -106,11 +109,11 @@ public class FormMain extends JFrame implements ConnectionListener
 				int deleted = 0;
 				for(int row : tableMeasurement.getSelectedRows())
 				{
-					RecordsManager.getRecordsMeasure().remove(row - deleted);
+					RecordsManager.getMeasureRecords().remove(row - deleted);
 					deleted++;
 				}
 				RecordsManager.save();
-				tableModelMeasure.fireTableDataChanged();
+				measureTableModel.fireTableDataChanged();
 				updateGraph();
 			}
 		});
@@ -120,24 +123,27 @@ public class FormMain extends JFrame implements ConnectionListener
 	
 	private void initTabForecast()
 	{
-		tableModelForecast = new ForecastRecordsTableModel(RecordsManager.getRecordsForecast());
-		tableModelForecast.addListener(graph::updateValues);
+		forecastTableModel = new ForecastRecordsTableModel(RecordsManager.getForecastRecords());
+		forecastTableModel.addListener(graph::updateValues);
 		
 		buttonAddRecord.addActionListener(e -> {
-			RecordsManager.getRecordsForecast().add(new Record((int) (new Date().getTime() / 1000), 0, 0));
+			int now = (int) (new Date().getTime() / 1000);
+			RecordsManager.getForecastRecords().add(new ForecastRecord(now, now, 0, 0));
 			RecordsManager.save();
-			tableModelForecast.fireTableDataChanged();
+			forecastTableModel.fireTableDataChanged();
 			updateGraph();
 		});
 		
-		tableForecast.setModel(tableModelForecast);
+		tableForecast.setModel(forecastTableModel);
 		tableForecast.setRowSelectionAllowed(true);
 		tableForecast.setColumnSelectionAllowed(false);
 		tableForecast.getTableHeader().setReorderingAllowed(false);
 		tableForecast.setDefaultRenderer(Date.class, new RecordsTableRenderer());
 		tableForecast.setDefaultEditor(Date.class, new DateCellEditor());
-		tableForecast.getColumnModel().getColumn(1).setCellEditor(new IntegerCellEditor(-128, 127));
-		tableForecast.getColumnModel().getColumn(2).setCellEditor(new IntegerCellEditor(0, 100));
+		tableForecast.getColumnModel().getColumn(2).setMaxWidth(100);
+		tableForecast.getColumnModel().getColumn(2).setCellEditor(new IntegerCellEditor(-128, 127));
+		tableForecast.getColumnModel().getColumn(3).setMaxWidth(90);
+		tableForecast.getColumnModel().getColumn(3).setCellEditor(new IntegerCellEditor(0, 100));
 		tableForecast.addKeyListener(new KeyListener()
 		{
 			@Override
@@ -154,11 +160,11 @@ public class FormMain extends JFrame implements ConnectionListener
 				int deleted = 0;
 				for(int row : tableForecast.getSelectedRows())
 				{
-					RecordsManager.getRecordsForecast().remove(row - deleted);
+					RecordsManager.getForecastRecords().remove(row - deleted);
 					deleted++;
 				}
 				RecordsManager.save();
-				tableModelForecast.fireTableDataChanged();
+				forecastTableModel.fireTableDataChanged();
 				updateGraph();
 			}
 		});
@@ -249,13 +255,13 @@ public class FormMain extends JFrame implements ConnectionListener
 	@Override
 	public void onDataReceive(ArrayList<Record> newRecords)
 	{
-		ArrayList<Record> records = RecordsManager.getRecordsMeasure();
+		ArrayList<Record> records = RecordsManager.getMeasureRecords();
 		newRecords.forEach(newRec ->
 		{
 			if(!records.contains(newRec)) records.add(newRec);
 		});
 		RecordsManager.save();
-		tableModelMeasure.fireTableDataChanged();
+		measureTableModel.fireTableDataChanged();
 		updateGraph();
 		
 		progressBarMemory.setValue(newRecords.size() * Connector.MEMORY_RECORD_SIZE);

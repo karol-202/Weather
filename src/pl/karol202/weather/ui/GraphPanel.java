@@ -82,11 +82,11 @@ public class GraphPanel extends JPanel
 	
 	private void drawData(Graphics2D g)
 	{
-		if(showMeasurement && RecordsManager.getRecordsMeasure() != null) drawRecords(g, RecordsManager.getRecordsMeasure(), Color.RED, Color.BLUE);
-		if(showForecast && RecordsManager.getRecordsForecast() != null) drawRecords(g, RecordsManager.getRecordsForecast(), Color.ORANGE, SystemColor.CYAN);
+		if(showMeasurement && RecordsManager.getMeasureRecords() != null) drawRecords(g, RecordsManager.getMeasureRecords(), Color.RED, Color.BLUE);
+		if(showForecast && RecordsManager.getForecastRecords() != null) drawRecords(g, RecordsManager.getForecastRecords(), Color.ORANGE, SystemColor.CYAN);
 	}
 	
-	private void drawRecords(Graphics2D g, ArrayList<Record> records, Color colorTemperature, Color colorHumidity)
+	private void drawRecords(Graphics2D g, ArrayList<? extends Record> records, Color colorTemperature, Color colorHumidity)
 	{
 		Record lastRecord = null;
 		for(Record record : records)
@@ -134,40 +134,48 @@ public class GraphPanel extends JPanel
 	private int getFirstRecordTime()
 	{
 		int first = -1;
-		if(showMeasurement) for(Record record : RecordsManager.getRecordsMeasure())
-			if(first == -1 || record.getTimeInSeconds() < first) first = record.getTimeInSeconds();
-		if(showForecast) for(Record record : RecordsManager.getRecordsForecast())
-			if(first == -1 || record.getTimeInSeconds() < first) first = record.getTimeInSeconds();
+		if(showMeasurement)
+			for(Record record : RecordsManager.getMeasureRecords())
+				if(first == -1 || record.getTimeInSeconds() < first) first = record.getTimeInSeconds();
+		if(showForecast)
+			for(Record record : RecordsManager.getForecastRecords())
+				if(first == -1 || record.getTimeInSeconds() < first) first = record.getTimeInSeconds();
 		return first;
 	}
 	
 	private int getLastRecordTime()
 	{
 		int last = -1;
-		if(showMeasurement) for(Record record : RecordsManager.getRecordsMeasure())
-			if(last == -1 || record.getTimeInSeconds() > last) last = record.getTimeInSeconds();
-		if(showForecast) for(Record record : RecordsManager.getRecordsForecast())
-			if(last == -1 || record.getTimeInSeconds() > last) last = record.getTimeInSeconds();
+		if(showMeasurement)
+			for(Record record : RecordsManager.getMeasureRecords())
+				if(last == -1 || record.getTimeInSeconds() > last) last = record.getTimeInSeconds();
+		if(showForecast)
+			for(Record record : RecordsManager.getForecastRecords())
+				if(last == -1 || record.getTimeInSeconds() > last) last = record.getTimeInSeconds();
 		return last;
 	}
 	
 	private int getLowestTemperature()
 	{
 		int small = Integer.MIN_VALUE;
-		if(showMeasurement) for(Record record : RecordsManager.getRecordsMeasure())
-			if(small == Integer.MIN_VALUE || record.getTemperature() < small) small = record.getTemperature();
-		if(showForecast) for(Record record : RecordsManager.getRecordsForecast())
-			if(small == Integer.MIN_VALUE || record.getTemperature() < small) small = record.getTemperature();
+		if(showMeasurement)
+			for(Record record : RecordsManager.getMeasureRecords())
+				if(small == Integer.MIN_VALUE || record.getTemperature() < small) small = record.getTemperature();
+		if(showForecast)
+			for(Record record : RecordsManager.getForecastRecords())
+				if(small == Integer.MIN_VALUE || record.getTemperature() < small) small = record.getTemperature();
 		return small;
 	}
 	
 	private int getHighestTemperature()
 	{
 		int large = Integer.MIN_VALUE;
-		if(showMeasurement) for(Record record : RecordsManager.getRecordsMeasure())
-			if(large == Integer.MIN_VALUE || record.getTemperature() > large) large = record.getTemperature();
-		if(showForecast) for(Record record : RecordsManager.getRecordsForecast())
-			if(large == Integer.MIN_VALUE || record.getTemperature() > large) large = record.getTemperature();
+		if(showMeasurement)
+			for(Record record : RecordsManager.getMeasureRecords())
+				if(large == Integer.MIN_VALUE || record.getTemperature() > large) large = record.getTemperature();
+		if(showForecast)
+			for(Record record : RecordsManager.getForecastRecords())
+				if(large == Integer.MIN_VALUE || record.getTemperature() > large) large = record.getTemperature();
 		return large;
 	}
 	

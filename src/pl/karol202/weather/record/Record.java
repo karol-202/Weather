@@ -29,7 +29,7 @@ public class Record
 	@Override
 	public int hashCode()
 	{
-		int result = (int) (timeInSeconds ^ (timeInSeconds >>> 32));
+		int result = timeInSeconds ^ (timeInSeconds >>> 32);
 		result = 31 * result + temperature;
 		result = 31 * result + humidity;
 		return result;

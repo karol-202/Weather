@@ -7,14 +7,14 @@ import java.util.ArrayList;
 
 public class RecordsManager
 {
-	private static ArrayList<Record> recordsMeasure;
-	private static ArrayList<Record> recordsForecast;
+	private static ArrayList<Record> measureRecords;
+	private static ArrayList<ForecastRecord> forecastRecords;
 	private static File file;
 	
 	public static void init()
 	{
-		recordsMeasure = new ArrayList<>();
-		recordsForecast = new ArrayList<>();
+		measureRecords = new ArrayList<>();
+		forecastRecords = new ArrayList<>();
 		try
 		{
 			file = new File("data.dat");
@@ -31,8 +31,8 @@ public class RecordsManager
 	{
 		try(InputStream stream = new FileInputStream(file))
 		{
-			loadRecordsToList(stream, recordsMeasure);
-			loadRecordsToList(stream, recordsForecast);
+			loadMeasureRecords(stream, measureRecords);
+			loadForecastRecords(stream, forecastRecords);
 		}
 		catch(IOException e)
 		{
@@ -40,16 +40,30 @@ public class RecordsManager
 		}
 	}
 	
-	private static void loadRecordsToList(InputStream stream, ArrayList<Record> records) throws IOException
+	private static void loadMeasureRecords(InputStream stream, ArrayList<Record> records) throws IOException
 	{
 		records.clear();
-		int lengthMeasure = DataUtils.bytesToInt(stream);
-		for(int i = 0; i < lengthMeasure; i++)
+		int length = DataUtils.bytesToInt(stream);
+		for(int i = 0; i < length; i++)
 		{
 			int time = DataUtils.bytesToInt(stream);
 			int temperature = readByte(stream);
 			int humidity = readByte(stream);
 			records.add(new Record(time, temperature, humidity));
+		}
+	}
+	
+	private static void loadForecastRecords(InputStream stream, ArrayList<ForecastRecord> records) throws IOException
+	{
+		records.clear();
+		int length = DataUtils.bytesToInt(stream);
+		for(int i = 0; i < length; i++)
+		{
+			int time = DataUtils.bytesToInt(stream);
+			int creationTime = DataUtils.bytesToInt(stream);
+			int temperature = readByte(stream);
+			int humidity = readByte(stream);
+			records.add(new ForecastRecord(time, creationTime, temperature, humidity));
 		}
 	}
 	
@@ -64,8 +78,8 @@ public class RecordsManager
 	{
 		try(OutputStream stream = new FileOutputStream(file))
 		{
-			saveRecordsToList(stream, recordsMeasure);
-			saveRecordsToList(stream, recordsForecast);
+			saveMeasureRecords(stream, measureRecords);
+			saveForecastRecords(stream, forecastRecords);
 		}
 		catch(IOException e)
 		{
@@ -73,7 +87,7 @@ public class RecordsManager
 		}
 	}
 	
-	private static void saveRecordsToList(OutputStream stream, ArrayList<Record> records) throws IOException
+	private static void saveMeasureRecords(OutputStream stream, ArrayList<Record> records) throws IOException
 	{
 		stream.write(DataUtils.intToBytes(records.size()));
 		for(Record record : records)
@@ -84,13 +98,25 @@ public class RecordsManager
 		}
 	}
 	
-	public static ArrayList<Record> getRecordsMeasure()
+	private static void saveForecastRecords(OutputStream stream, ArrayList<ForecastRecord> records) throws IOException
 	{
-		return recordsMeasure;
+		stream.write(DataUtils.intToBytes(records.size()));
+		for(ForecastRecord record : records)
+		{
+			stream.write(DataUtils.intToBytes(record.getTimeInSeconds()));
+			stream.write(DataUtils.intToBytes(record.getCreationTimeInSeconds()));
+			stream.write(record.getTemperature());
+			stream.write(record.getHumidity());
+		}
 	}
 	
-	public static ArrayList<Record> getRecordsForecast()
+	public static ArrayList<Record> getMeasureRecords()
 	{
-		return recordsForecast;
+		return measureRecords;
+	}
+	
+	public static ArrayList<ForecastRecord> getForecastRecords()
+	{
+		return forecastRecords;
 	}
 }
