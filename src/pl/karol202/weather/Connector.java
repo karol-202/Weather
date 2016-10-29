@@ -106,7 +106,6 @@ public class Connector implements SerialPortEventListener
 	{
 		try
 		{
-			System.out.println("Current date/time: " + new Date().getTime());
 			int time = (int) (new Date().getTime() / 1000);
 			outputStream.write(MESSAGE_SET_TIME);
 			outputStream.write(DataUtils.intToBytes(time));
@@ -169,11 +168,9 @@ public class Connector implements SerialPortEventListener
 				waitForData = false;
 				ArrayList<Record> records = new ArrayList<>();
 				int length = inputStream.read();
-				System.out.println("Got new records: " + length);
 				for(int i = 0; i < length; i++)
 				{
 					int time = DataUtils.bytesToInt(inputStream);
-					System.out.println(time / 1000);
 					int temperature = inputStream.read();
 					int humidity = inputStream.read();
 					records.add(new Record(time, temperature, humidity));

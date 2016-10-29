@@ -78,7 +78,7 @@
                   <component id="b741" class="javax.swing.JButton" binding="buttonConnect">
                     <constraints>
                       <grid row="6" column="0" row-span="1" col-span="1" vsize-policy="0" hsize-policy="3" anchor="0" fill="3" indent="0" use-parent-layout="false"/>
-                      <gridbag top="0" left="0" bottom="5" right="0" weightx="0.0" weighty="0.0" ipady="5"/>
+                      <gridbag weightx="0.0" weighty="0.0" ipady="5"/>
                     </constraints>
                     <properties>
                       <text value="Połącz"/>
@@ -94,7 +94,7 @@
                   <component id="da7e3" class="javax.swing.JButton" binding="buttonRefresh">
                     <constraints>
                       <grid row="5" column="0" row-span="1" col-span="1" vsize-policy="0" hsize-policy="3" anchor="0" fill="3" indent="0" use-parent-layout="false"/>
-                      <gridbag weightx="0.0" weighty="0.0" ipady="5"/>
+                      <gridbag top="0" left="0" bottom="5" right="0" weightx="0.0" weighty="0.0" ipady="5"/>
                     </constraints>
                     <properties>
                       <text value="Odśwież"/>
@@ -114,6 +114,58 @@
                     <constraints/>
                     <properties>
                       <autoCreateRowSorter value="false"/>
+                      <visible value="true"/>
+                    </properties>
+                  </component>
+                </children>
+              </scrollpane>
+            </children>
+          </grid>
+          <grid id="f5b0" layout-manager="GridBagLayout">
+            <constraints>
+              <tabbedpane title="Prognoza"/>
+            </constraints>
+            <properties/>
+            <border type="none"/>
+            <children>
+              <grid id="ce41c" layout-manager="GridBagLayout">
+                <constraints>
+                  <grid row="0" column="0" row-span="1" col-span="1" vsize-policy="3" hsize-policy="3" anchor="0" fill="3" indent="0" use-parent-layout="false"/>
+                  <gridbag top="5" left="5" bottom="5" right="5" weightx="0.0" weighty="0.0"/>
+                </constraints>
+                <properties/>
+                <border type="none"/>
+                <children>
+                  <component id="208ab" class="javax.swing.JButton" binding="buttonAddRecord">
+                    <constraints>
+                      <grid row="1" column="0" row-span="1" col-span="1" vsize-policy="0" hsize-policy="3" anchor="0" fill="1" indent="0" use-parent-layout="false"/>
+                      <gridbag weightx="0.0" weighty="0.0" ipadx="15" ipady="5"/>
+                    </constraints>
+                    <properties>
+                      <text value="Dodaj rekord"/>
+                    </properties>
+                  </component>
+                  <vspacer id="72105">
+                    <constraints>
+                      <grid row="0" column="0" row-span="1" col-span="1" vsize-policy="6" hsize-policy="1" anchor="0" fill="2" indent="0" use-parent-layout="false"/>
+                      <gridbag weightx="0.0" weighty="1.0"/>
+                    </constraints>
+                  </vspacer>
+                </children>
+              </grid>
+              <scrollpane id="cd771">
+                <constraints>
+                  <grid row="0" column="1" row-span="1" col-span="1" vsize-policy="7" hsize-policy="7" anchor="0" fill="3" indent="0" use-parent-layout="false"/>
+                  <gridbag weightx="1.0" weighty="1.0"/>
+                </constraints>
+                <properties/>
+                <border type="none"/>
+                <children>
+                  <component id="24c13" class="javax.swing.JTable" binding="tableForecast">
+                    <constraints/>
+                    <properties>
+                      <autoCreateRowSorter value="false"/>
+                      <fillsViewportHeight value="false"/>
                       <visible value="true"/>
                     </properties>
                   </component>

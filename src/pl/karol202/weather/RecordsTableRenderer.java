@@ -10,11 +10,11 @@ public class RecordsTableRenderer extends DefaultTableCellRenderer
 	public RecordsTableRenderer()
 	{
 		super();
+		this.formatter = DateFormat.getDateTimeInstance();
 	}
 	
 	public void setValue(Object value)
 	{
-		if (formatter == null) formatter = DateFormat.getDateTimeInstance();
 		setText((value == null) ? "" : formatter.format(value));
 	}
 }

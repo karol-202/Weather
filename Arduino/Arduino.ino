@@ -10,6 +10,8 @@
 #define MESSAGE_GET_DATA 3
 #define MESSAGE_RESET 4
 
+#define MEASURE_DELAY 1800 //30 minut
+
 struct Record
 {
   unsigned long time;
@@ -18,7 +20,7 @@ struct Record
 };
 
 DHT dht(PIN_DHT, DHT11);
-const int measureDelay = 60 * 30; //30 minut
+int measureDelay;
 
 void setup()
 {
@@ -30,15 +32,12 @@ void setup()
   time_t time;
   EEPROM.get(addrTime, time);
   setTime(time);
+
+  measureDelay = 10; //Czekaj 10 sekund przed pierwszym zapisem
 }
 
 void loop()
 {
-  digitalWrite(PIN_LED, HIGH);
-  collectData();
-  delay(1000);
-  digitalWrite(PIN_LED, LOW);
-  
   unsigned long lastTime = now();
   while(now() < lastTime + measureDelay)
   {
@@ -68,6 +67,12 @@ void loop()
     }
     delay(500); //Czekaj 0.5s przed kolejnym sprawdzeniem
   }
+
+  digitalWrite(PIN_LED, HIGH);
+  collectData();
+  delay(1000);
+  digitalWrite(PIN_LED, LOW);
+  measureDelay = MEASURE_DELAY - 1; //1 - czas zużyty na świecenie diody LED
 }
 
 void updateTime()

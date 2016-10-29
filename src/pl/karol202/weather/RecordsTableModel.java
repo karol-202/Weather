@@ -62,23 +62,8 @@ public class RecordsTableModel extends AbstractTableModel
 		return null;
 	}
 	
-	@Override
-	public void setValueAt(Object aValue, int rowIndex, int columnIndex)
+	protected ArrayList<Record> getData()
 	{
-		Record record = data.get(rowIndex);
-		switch(columnIndex)
-		{
-		case 0:
-			int timeInSeconds = (int) (((Date) aValue).getTime() / 1000);
-			record.setTimeInSeconds(timeInSeconds);
-			break;
-		case 1:
-			record.setTemperature((int) aValue);
-			break;
-		case 2:
-			record.setHumidity((int) aValue);
-			break;
-		}
-		fireTableCellUpdated(rowIndex, columnIndex);
+		return data;
 	}
 }

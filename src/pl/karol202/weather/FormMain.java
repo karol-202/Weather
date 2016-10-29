@@ -8,12 +8,11 @@ import java.awt.event.KeyListener;
 import java.util.ArrayList;
 import java.util.Date;
 
-import static pl.karol202.weather.RecordsManager.getRecordsMeasure;
-
 public class FormMain extends JFrame implements ConnectionListener
 {
 	private Connector connector;
 	private RecordsTableModel tableModelMeasure;
+	private ForecastRecordsTableModel tableModelForecast;
 	private SpinnerNumberModel spinnerModelNumber;
 	
 	private JPanel root;
@@ -25,6 +24,10 @@ public class FormMain extends JFrame implements ConnectionListener
 	private JButton buttonReset;
 	private JComboBox<String> comboBoxPort;
 	private JButton buttonRefresh;
+	
+	private JButton buttonAddRecord;
+	private JTable tableForecast;
+	
 	private JCheckBox checkBoxMeasure;
 	private JCheckBox checkBoxForecast;
 	private JCheckBox checkBoxTemperature;
@@ -46,8 +49,10 @@ public class FormMain extends JFrame implements ConnectionListener
 		RecordsManager.init();
 		initPorts();
 		
-		tableModelMeasure = new RecordsTableModel(getRecordsMeasure());
-		tableModelMeasure.addTableModelListener(e -> RecordsManager.save());
+		tableModelMeasure = new RecordsTableModel(RecordsManager.getRecordsMeasure());
+		//tableModelMeasure.addTableModelListener(e -> RecordsManager.save());
+		
+		tableModelForecast = new ForecastRecordsTableModel(RecordsManager.getRecordsForecast());
 		
 		spinnerModelNumber = new SpinnerNumberModel(5, 1, 100, 1);
 		
@@ -89,6 +94,46 @@ public class FormMain extends JFrame implements ConnectionListener
 				}
 				RecordsManager.save();
 				tableModelMeasure.fireTableDataChanged();
+				updateGraph();
+			}
+		});
+		
+		buttonAddRecord.addActionListener(e -> {
+			RecordsManager.getRecordsForecast().add(new Record((int) (new Date().getTime() / 1000), 0, 0));
+			RecordsManager.save();
+			tableModelForecast.fireTableDataChanged();
+			updateGraph();
+		});
+		
+		tableForecast.setModel(tableModelForecast);
+		tableForecast.setRowSelectionAllowed(true);
+		tableForecast.setColumnSelectionAllowed(false);
+		tableForecast.getTableHeader().setReorderingAllowed(false);
+		tableForecast.setDefaultRenderer(Date.class, new RecordsTableRenderer());
+		tableForecast.setDefaultEditor(Date.class, new DateCellEditor());
+		tableForecast.getColumnModel().getColumn(1).setCellEditor(new IntegerCellEditor(-128, 127));
+		tableForecast.getColumnModel().getColumn(2).setCellEditor(new IntegerCellEditor(0, 100));
+		tableForecast.addKeyListener(new KeyListener()
+		{
+			@Override
+			public void keyTyped(KeyEvent e) { }
+			
+			@Override
+			public void keyPressed(KeyEvent e) { }
+			
+			@Override
+			public void keyReleased(KeyEvent e)
+			{
+				if(e.getKeyCode() != KeyEvent.VK_DELETE) return;
+				
+				int deleted = 0;
+				for(int row : tableForecast.getSelectedRows())
+				{
+					RecordsManager.getRecordsForecast().remove(row - deleted);
+					deleted++;
+				}
+				RecordsManager.save();
+				tableModelForecast.fireTableDataChanged();
 				updateGraph();
 			}
 		});
@@ -184,7 +229,7 @@ public class FormMain extends JFrame implements ConnectionListener
 	@Override
 	public void onDataReceive(ArrayList<Record> newRecords)
 	{
-		ArrayList<Record> records = getRecordsMeasure();
+		ArrayList<Record> records = RecordsManager.getRecordsMeasure();
 		newRecords.forEach(newRec ->
 		{
 			if(!records.contains(newRec)) records.add(newRec);
@@ -206,9 +251,10 @@ public class FormMain extends JFrame implements ConnectionListener
 		graph.setOffsetPercent(offset);
 		graph.updateValues();
 		
-		scrollBarOffset.setVisibleAmount(graph.getTimeScaleRatio());
-		if(scrollBarOffset.getValue() + graph.getTimeScaleRatio() > scrollBarOffset.getMaximum())
-			scrollBarOffset.setValue(0);
+		int timeRatio = graph.getTimeScaleRatio();
+		scrollBarOffset.setVisibleAmount(timeRatio);
+		if(scrollBarOffset.getValue() + timeRatio > scrollBarOffset.getMaximum())
+			scrollBarOffset.setValue(scrollBarOffset.getMaximum() - timeRatio);
 	}
 	
 	public static void main(String[] args)
