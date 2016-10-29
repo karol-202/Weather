@@ -1,6 +1,10 @@
-package pl.karol202.weather;
+package pl.karol202.weather.ui;
 
-import pl.karol202.weather.Connector.ConnectionListener;
+import pl.karol202.weather.hardware.Connector;
+import pl.karol202.weather.hardware.Connector.ConnectionListener;
+import pl.karol202.weather.record.Record;
+import pl.karol202.weather.record.RecordsManager;
+import pl.karol202.weather.ui.table.*;
 
 import javax.swing.*;
 import java.awt.event.KeyEvent;
@@ -24,6 +28,7 @@ public class FormMain extends JFrame implements ConnectionListener
 	private JButton buttonReset;
 	private JComboBox<String> comboBoxPort;
 	private JButton buttonRefresh;
+	private JProgressBar progressBarMemory;
 	
 	private JButton buttonAddRecord;
 	private JTable tableForecast;
@@ -49,12 +54,24 @@ public class FormMain extends JFrame implements ConnectionListener
 		RecordsManager.init();
 		initPorts();
 		
+		initTabMeasure();
+		initTabForecast();
+		initTabGraph();
+	}
+	
+	private void initPorts()
+	{
+		Connector.init();
+		ArrayList<String> names = Connector.getPortsNames();
+		
+		if(connector != null) if(names.stream().noneMatch(name -> name.equals(connector.getPortId().getName()))) disconnect();
+		String[] namesArray = names.toArray(new String[names.size()]);
+		comboBoxPort.setModel(new DefaultComboBoxModel<>(namesArray));
+	}
+	
+	private void initTabMeasure()
+	{
 		tableModelMeasure = new RecordsTableModel(RecordsManager.getRecordsMeasure());
-		//tableModelMeasure.addTableModelListener(e -> RecordsManager.save());
-		
-		tableModelForecast = new ForecastRecordsTableModel(RecordsManager.getRecordsForecast());
-		
-		spinnerModelNumber = new SpinnerNumberModel(5, 1, 100, 1);
 		
 		buttonConnect.addActionListener(e -> onConnectClick());
 		buttonSetTime.addActionListener(e -> onSetTimeClick());
@@ -98,6 +115,14 @@ public class FormMain extends JFrame implements ConnectionListener
 			}
 		});
 		
+		progressBarMemory.setMaximum(Connector.MEMORY_SPACE_FOR_RECORDS);
+	}
+	
+	private void initTabForecast()
+	{
+		tableModelForecast = new ForecastRecordsTableModel(RecordsManager.getRecordsForecast());
+		tableModelForecast.addListener(graph::updateValues);
+		
 		buttonAddRecord.addActionListener(e -> {
 			RecordsManager.getRecordsForecast().add(new Record((int) (new Date().getTime() / 1000), 0, 0));
 			RecordsManager.save();
@@ -137,6 +162,11 @@ public class FormMain extends JFrame implements ConnectionListener
 				updateGraph();
 			}
 		});
+	}
+	
+	private void initTabGraph()
+	{
+		spinnerModelNumber = new SpinnerNumberModel(5, 1, 100, 1);
 		
 		scrollBarOffset.addAdjustmentListener(e -> updateGraph());
 		
@@ -144,16 +174,6 @@ public class FormMain extends JFrame implements ConnectionListener
 		spinnerScale.addChangeListener(e -> updateGraph());
 		
 		updateGraph();
-	}
-	
-	private void initPorts()
-	{
-		Connector.init();
-		ArrayList<String> names = Connector.getPortsNames();
-		
-		if(connector != null) if(names.stream().noneMatch(name -> name.equals(connector.getPortId().getName()))) disconnect();
-		String[] namesArray = names.toArray(new String[names.size()]);
-		comboBoxPort.setModel(new DefaultComboBoxModel<>(namesArray));
 	}
 	
 	private void onConnectClick()
@@ -237,6 +257,8 @@ public class FormMain extends JFrame implements ConnectionListener
 		RecordsManager.save();
 		tableModelMeasure.fireTableDataChanged();
 		updateGraph();
+		
+		progressBarMemory.setValue(newRecords.size() * Connector.MEMORY_RECORD_SIZE);
 	}
 	
 	private void updateGraph()

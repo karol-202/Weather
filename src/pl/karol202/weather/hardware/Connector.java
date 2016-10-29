@@ -1,6 +1,7 @@
-package pl.karol202.weather;
+package pl.karol202.weather.hardware;
 
 import gnu.io.*;
+import pl.karol202.weather.record.Record;
 
 import java.io.IOException;
 import java.io.InputStream;
@@ -53,6 +54,9 @@ public class Connector implements SerialPortEventListener
 	private final int MESSAGE_SAVE_TIME = 2;
 	private final int MESSAGE_GET_DATA = 3;
 	private final int MESSAGE_RESET = 4;
+	
+	public static final int MEMORY_SPACE_FOR_RECORDS = 1024 - 7;
+	public static final int MEMORY_RECORD_SIZE = 6;
 	
 	private static ArrayList<CommPortIdentifier> ports;
 	
@@ -161,28 +165,28 @@ public class Connector implements SerialPortEventListener
 	@Override
 	public void serialEvent(SerialPortEvent event)
 	{
-		if(event.getEventType() == SerialPortEvent.DATA_AVAILABLE && waitForData)
+		if(event.getEventType() != SerialPortEvent.DATA_AVAILABLE || !waitForData) return;
+		try
 		{
-			try
-			{
-				waitForData = false;
-				ArrayList<Record> records = new ArrayList<>();
-				int length = inputStream.read();
-				for(int i = 0; i < length; i++)
-				{
-					int time = DataUtils.bytesToInt(inputStream);
-					int temperature = inputStream.read();
-					int humidity = inputStream.read();
-					records.add(new Record(time, temperature, humidity));
-				}
-				listener.onDataReceive(records);
-			}
-			catch(IOException e)
-			{
-				e.printStackTrace();
-				if(listener != null) listener.onError(e.getMessage());
-			}
+			waitForData = false;
+			ArrayList<Record> records = new ArrayList<>();
+			int length = inputStream.read();
+			for(int i = 0; i < length; i++) readRecord(records);
+			listener.onDataReceive(records);
 		}
+		catch(IOException e)
+		{
+			e.printStackTrace();
+			if(listener != null) listener.onError(e.getMessage());
+		}
+	}
+	
+	private void readRecord(ArrayList<Record> records) throws IOException
+	{
+		int time = DataUtils.bytesToInt(inputStream);
+		int temperature = inputStream.read();
+		int humidity = inputStream.read();
+		records.add(new Record(time, temperature, humidity));
 	}
 	
 	public static ArrayList<String> getPortsNames()

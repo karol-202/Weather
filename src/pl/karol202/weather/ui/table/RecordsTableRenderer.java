@@ -1,4 +1,4 @@
-package pl.karol202.weather;
+package pl.karol202.weather.ui.table;
 
 import javax.swing.table.DefaultTableCellRenderer;
 import java.text.DateFormat;

@@ -1,4 +1,6 @@
-package pl.karol202.weather;
+package pl.karol202.weather.ui.table;
+
+import pl.karol202.weather.record.Record;
 
 import javax.swing.table.AbstractTableModel;
 import java.util.ArrayList;

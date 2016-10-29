@@ -1,4 +1,4 @@
-package pl.karol202.weather;
+package pl.karol202.weather.record;
 
 public class Record
 {

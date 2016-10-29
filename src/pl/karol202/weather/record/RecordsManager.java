@@ -1,4 +1,6 @@
-package pl.karol202.weather;
+package pl.karol202.weather.record;
+
+import pl.karol202.weather.hardware.DataUtils;
 
 import java.io.*;
 import java.util.ArrayList;

@@ -1,4 +1,7 @@
-package pl.karol202.weather;
+package pl.karol202.weather.ui;
+
+import pl.karol202.weather.record.Record;
+import pl.karol202.weather.record.RecordsManager;
 
 import javax.swing.*;
 import java.awt.*;

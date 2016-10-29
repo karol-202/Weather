@@ -1,45 +1,47 @@
-package pl.karol202.weather;
+package pl.karol202.weather.ui.table;
 
 import javax.swing.*;
+import javax.swing.text.DateFormatter;
 import javax.swing.text.DefaultFormatterFactory;
-import javax.swing.text.NumberFormatter;
 import java.awt.*;
-import java.text.NumberFormat;
+import java.text.DateFormat;
 import java.text.ParseException;
+import java.util.Date;
 
-public class IntegerCellEditor extends DefaultCellEditor
+public class DateCellEditor extends DefaultCellEditor
 {
 	private JFormattedTextField textField;
+	private DateFormat format;
 	
-	public IntegerCellEditor(int min, int max)
+	public DateCellEditor()
 	{
 		super(new JFormattedTextField());
 		textField = (JFormattedTextField) getComponent();
-		textField.setHorizontalAlignment(SwingConstants.TRAILING);
 		textField.setFocusLostBehavior(JFormattedTextField.PERSIST);
 		
-		NumberFormatter formatter = new NumberFormatter(NumberFormat.getIntegerInstance());
-		formatter.setMinimum(min);
-		formatter.setMaximum(max);
+		format = DateFormat.getDateTimeInstance();
+		DateFormatter formatter = new DateFormatter(format);
 		textField.setFormatterFactory(new DefaultFormatterFactory(formatter));
 	}
 	
 	@Override
 	public Component getTableCellEditorComponent(JTable table, Object value, boolean isSelected, int row, int column)
 	{
-		JFormattedTextField textField =
-				(JFormattedTextField) super.getTableCellEditorComponent(table, value, isSelected, row, column);
-		textField.setValue(value);
-		return textField;
+		if (value instanceof Date)
+		{
+			Date date = (Date) value;
+			textField.setText(format.format(date));
+			return textField;
+		}
+		return null;
 	}
 	
 	@Override
 	public Object getCellEditorValue()
 	{
-		Object value = textField.getValue();
-		if(value instanceof Integer) return value;
-		else if(value instanceof Number) return ((Number) value).intValue();
-		return 0;
+		try { return format.parse(textField.getText()); }
+		catch(ParseException e) { e.printStackTrace(); }
+		return null;
 	}
 	
 	@Override
