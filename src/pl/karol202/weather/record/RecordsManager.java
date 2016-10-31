@@ -64,10 +64,10 @@ public class RecordsManager
 		{
 			int time = DataUtils.bytesToInt(stream);
 			int creationTime = DataUtils.bytesToInt(stream);
-			//int forecastSource = readByte(stream);
+			int forecastSource = readByte(stream);
 			int temperature = readByte(stream);
 			int humidity = readByte(stream);
-			records.add(new ForecastRecord(time, creationTime, 0, temperature, humidity));
+			records.add(new ForecastRecord(time, creationTime, forecastSource, temperature, humidity));
 		}
 	}
 	
@@ -129,7 +129,7 @@ public class RecordsManager
 		{
 			stream.write(DataUtils.intToBytes(record.getTimeInSeconds()));
 			stream.write(DataUtils.intToBytes(record.getCreationTimeInSeconds()));
-			//stream.write(record.getForecastSource());
+			stream.write(record.getForecastSource());
 			stream.write(record.getTemperature());
 			stream.write(record.getHumidity());
 		}

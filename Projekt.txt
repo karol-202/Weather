@@ -44,16 +44,3 @@
 		l-7 - l-4   aktualny czas
 		l-3 - l-2   wartość sprawdzająca, czy pamięć jest pusta, 255 - pusta, 0 - niepusta
 		l-1 - l-0   ilość rekordów
-#4. Komputer
-	1. Aplikacja nawiązuje połączenie z Arduino zgodnie
-		z protokołem opisanym w podpunkcie B punktu #2.
-	2. Po połączeniu z Arduino, użytkownik ma do dyspozycji następujące czynności:
-	
-		* Wysłanie aktualnego czasu do Arduino zgodnie z komunikatem SET_TIME.
-		* Żądanie zapisania aktualnego czasu do pamięci Arduino zgodnie z komunikatem SAVE_TIME.
-		* Pobranie danych z Arduino zgodnie z komunikatem GET_DATA.
-		* Żądanie wymazania danych z pamięci Arduino.
-	3. Dane pobrane z Arduino zgodnie z komunikatem GET_DATA są zapisywane w pliku data.dat.
-		Jego format może być dowolny.
-	4. Dane z pliku data.dat są ładowane podczas włączania
-		programu i wyświetlane w postaci czytelnej dla użytkownika.

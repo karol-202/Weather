@@ -1,15 +1,17 @@
 package pl.karol202.weather.ui.table.model;
 
 import pl.karol202.weather.record.Record;
+import pl.karol202.weather.record.RecordsManager;
 
-import java.util.ArrayList;
 import java.util.Date;
 
 public class MeasureRecordsTableModel extends RecordsTableModel<Record>
 {
-	public MeasureRecordsTableModel(ArrayList<Record> data)
+	private static final String[] header = new String[] { "Czas", "Temperatura", "Wilgotność" };
+	
+	public MeasureRecordsTableModel()
 	{
-		super(new String[] { "Czas", "Temperatura", "Wilgotność" }, data);
+		super(header, RecordsManager.getMeasureRecords());
 	}
 	
 	@Override

@@ -86,7 +86,7 @@ public class FormMain extends JFrame implements ConnectionListener
 	
 	private void initTabMeasure()
 	{
-		measureTableModel = new MeasureRecordsTableModel(RecordsManager.getMeasureRecords());
+		measureTableModel = new MeasureRecordsTableModel();
 		
 		buttonConnect.addActionListener(e -> onConnectClick());
 		buttonSetTime.addActionListener(e -> onSetTimeClick());
@@ -141,7 +141,7 @@ public class FormMain extends JFrame implements ConnectionListener
 	
 	private void initTabForecast()
 	{
-		forecastTableModel = new ForecastRecordsTableModel(RecordsManager.getForecastRecords());
+		forecastTableModel = new ForecastRecordsTableModel();
 		forecastTableModel.addListener(graph::updateValues);
 		
 		buttonAddRecord.addActionListener(e -> {
@@ -196,7 +196,7 @@ public class FormMain extends JFrame implements ConnectionListener
 		});
 		
 		comboBoxSources.addItemListener(e -> updateSourceFilter());
-		updateSourcesComboBox();
+		updateSources();
 		
 		buttonAddSource.addActionListener(e -> showSourceDialog(true));
 		buttonEditSource.addActionListener(e -> showSourceDialog(false));
@@ -222,6 +222,12 @@ public class FormMain extends JFrame implements ConnectionListener
 		comboBoxPort.setModel(new DefaultComboBoxModel<>(namesArray));
 	}
 	
+	private void updateSources()
+	{
+		updateSourcesComboBox();
+		updateSourceFilter();
+	}
+	
 	private void updateSourcesComboBox()
 	{
 		String[] sources = new String[RecordsManager.getForecastSources().size()];
@@ -231,8 +237,6 @@ public class FormMain extends JFrame implements ConnectionListener
 		names[0] = "  Brak filtra";
 		System.arraycopy(sources, 0, names, 1, sources.length);
 		comboBoxSources.setModel(new DefaultComboBoxModel<>(names));
-		
-		updateSourceFilter();
 	}
 	
 	private void updateSourceFilter()
@@ -249,6 +253,9 @@ public class FormMain extends JFrame implements ConnectionListener
 			buttonDeleteSource.setEnabled(true);
 		}
 		currentSourceFilter = newSourceFilter;
+		
+		forecastTableModel.setCurrentSourceFilter(currentSourceFilter);
+		forecastTableModel.fireTableDataChanged();
 	}
 	
 	private void updateGraph()
@@ -359,7 +366,7 @@ public class FormMain extends JFrame implements ConnectionListener
 	{
 		RecordsManager.getForecastSources().add(name);
 		RecordsManager.save();
-		updateSourcesComboBox();
+		updateSources();
 	}
 	
 	private void editCurrentSource(String newName)
@@ -367,8 +374,7 @@ public class FormMain extends JFrame implements ConnectionListener
 		checkCurrentSourceFilter();
 		RecordsManager.getForecastSources().set(currentSourceFilter, newName);
 		RecordsManager.save();
-		updateSourcesComboBox();
-		forecastTableModel.fireTableDataChanged();
+		updateSources();
 	}
 	
 	private void deleteSourceAndRecordsUsingIt()
@@ -386,8 +392,7 @@ public class FormMain extends JFrame implements ConnectionListener
 		
 		RecordsManager.getForecastSources().remove(currentSourceFilter);
 		RecordsManager.save();
-		updateSourcesComboBox();
-		forecastTableModel.fireTableDataChanged();
+		updateSources();
 		updateGraph();
 	}
 	

@@ -13,11 +13,18 @@ public class ForecastRecordsTableModel extends RecordsTableModel<ForecastRecord>
 		void onDataUpdate();
 	}
 	
-	private ArrayList<DataUpdateListener> listeners;
+	private static final String[] header = new String[] { "Czas",
+														  "Czas utworzenia rekordu",
+														  "Źródło",
+														  "Temperatura",
+														  "Wilgotność" };
 	
-	public ForecastRecordsTableModel(ArrayList<ForecastRecord> data)
+	private ArrayList<DataUpdateListener> listeners;
+	private int currentSourceFilter;
+	
+	public ForecastRecordsTableModel()
 	{
-		super(new String[] { "Czas", "Czas utworzenia rekordu", "Źródło", "Temperatura", "Wilgotność" }, data);
+		super(header, new ArrayList<>());
 		this.listeners = new ArrayList<>();
 	}
 	
@@ -79,8 +86,30 @@ public class ForecastRecordsTableModel extends RecordsTableModel<ForecastRecord>
 		listeners.forEach(DataUpdateListener::onDataUpdate);
 	}
 	
+	@Override
+	public void fireTableDataChanged()
+	{
+		updateRecords();
+		super.fireTableDataChanged();
+	}
+	
+	private void updateRecords()
+	{
+		getData().clear();
+		if(currentSourceFilter == -1) RecordsManager.getForecastRecords().forEach(getData()::add);
+		else RecordsManager.getForecastRecords()
+						   .stream()
+						   .filter(record -> record.getForecastSource() == currentSourceFilter)
+						   .forEach(getData()::add);
+	}
+	
 	public void addListener(DataUpdateListener listener)
 	{
 		listeners.add(listener);
+	}
+	
+	public void setCurrentSourceFilter(int currentSourceFilter)
+	{
+		this.currentSourceFilter = currentSourceFilter;
 	}
 }
