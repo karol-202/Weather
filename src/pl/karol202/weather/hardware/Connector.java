@@ -92,12 +92,18 @@ public class Connector implements SerialPortEventListener
 		}
 	}
 	
-	public static void init()
+	public static void refreshPorts()
 	{
 		ports = new ArrayList<>();
 		Enumeration portsEnum = CommPortIdentifier.getPortIdentifiers();
 		while(portsEnum.hasMoreElements())
 			ports.add((CommPortIdentifier) portsEnum.nextElement());
+	}
+	
+	public void checkConnection()
+	{
+		if(ports.stream().map(CommPortIdentifier::getName).noneMatch(name -> name.equals(portId.getName())))
+			listener.onError("Połączenie zostało zerwane");
 	}
 	
 	public void disconnect()

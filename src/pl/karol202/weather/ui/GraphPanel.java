@@ -64,10 +64,10 @@ public class GraphPanel extends JPanel
 	private void drawTexts(Graphics2D g)
 	{
 		g.setColor(Color.RED);
-		String startTemperatureText = Integer.toString(lowestTemperature) + "°";
-		String endTemperatureText = Integer.toString(highestTemperature) + "°";
-		g.drawString(startTemperatureText, MARGIN - 4 - (startTemperatureText.length() * 6), getHeight() - MARGIN + 2);
-		g.drawString(endTemperatureText, MARGIN - 4 - (endTemperatureText.length() * 6), MARGIN + 2);
+		String startTemperatureText = Integer.toString(lowestTemperature) + "°C";
+		String endTemperatureText = Integer.toString(highestTemperature) + "°C";
+		g.drawString(startTemperatureText, MARGIN - (startTemperatureText.length() * 6), getHeight() - MARGIN + 2);
+		g.drawString(endTemperatureText, MARGIN - (endTemperatureText.length() * 6), MARGIN + 2);
 		
 		g.setColor(Color.BLUE);
 		g.drawString("0%", getWidth() - MARGIN + 2, getHeight() - MARGIN + 2);

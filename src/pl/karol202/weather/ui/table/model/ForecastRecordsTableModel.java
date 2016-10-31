@@ -1,4 +1,4 @@
-package pl.karol202.weather.ui.table;
+package pl.karol202.weather.ui.table.model;
 
 import pl.karol202.weather.record.ForecastRecord;
 import pl.karol202.weather.record.RecordsManager;
@@ -17,7 +17,7 @@ public class ForecastRecordsTableModel extends RecordsTableModel<ForecastRecord>
 	
 	public ForecastRecordsTableModel(ArrayList<ForecastRecord> data)
 	{
-		super(new String[] { "Czas", "Czas utworzenia rekordu", "Temperatura", "Wilgotność" }, data);
+		super(new String[] { "Czas", "Czas utworzenia rekordu", "Źródło", "Temperatura", "Wilgotność" }, data);
 		this.listeners = new ArrayList<>();
 	}
 	
@@ -40,8 +40,10 @@ public class ForecastRecordsTableModel extends RecordsTableModel<ForecastRecord>
 			long creationTimeInMillis = ((long) record.getCreationTimeInSeconds()) * 1000;
 			return new Date(creationTimeInMillis);
 		case 2:
-			return record.getTemperature();
+			return record.getForecastSource();
 		case 3:
+			return record.getTemperature();
+		case 4:
 			return record.getHumidity();
 		}
 		return null;
@@ -50,7 +52,7 @@ public class ForecastRecordsTableModel extends RecordsTableModel<ForecastRecord>
 	@Override
 	public void setValueAt(Object aValue, int rowIndex, int columnIndex)
 	{
-		if(rowIndex >= getData().size()) return;
+		if(rowIndex < 0 || rowIndex >= getData().size()) return;
 		ForecastRecord record = getData().get(rowIndex);
 		switch(columnIndex)
 		{
@@ -63,9 +65,12 @@ public class ForecastRecordsTableModel extends RecordsTableModel<ForecastRecord>
 			record.setCreationTimeInSeconds(creationTimeInSeconds);
 			break;
 		case 2:
-			record.setTemperature((int) aValue);
+			record.setForecastSource((int) aValue);
 			break;
 		case 3:
+			record.setTemperature((int) aValue);
+			break;
+		case 4:
 			record.setHumidity((int) aValue);
 			break;
 		}

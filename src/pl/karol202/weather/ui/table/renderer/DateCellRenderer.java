@@ -1,13 +1,13 @@
-package pl.karol202.weather.ui.table;
+package pl.karol202.weather.ui.table.renderer;
 
 import javax.swing.table.DefaultTableCellRenderer;
 import java.text.DateFormat;
 
-public class RecordsTableRenderer extends DefaultTableCellRenderer
+public class DateCellRenderer extends DefaultTableCellRenderer
 {
 	private DateFormat formatter;
 	
-	public RecordsTableRenderer()
+	public DateCellRenderer()
 	{
 		super();
 		this.formatter = DateFormat.getDateTimeInstance();

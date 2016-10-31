@@ -84,13 +84,6 @@
                       <text value="Połącz"/>
                     </properties>
                   </component>
-                  <component id="c9103" class="javax.swing.JComboBox" binding="comboBoxPort">
-                    <constraints>
-                      <grid row="5" column="0" row-span="1" col-span="1" vsize-policy="0" hsize-policy="2" anchor="10" fill="1" indent="0" use-parent-layout="false"/>
-                      <gridbag top="0" left="0" bottom="5" right="0" weightx="0.0" weighty="1.0"/>
-                    </constraints>
-                    <properties/>
-                  </component>
                   <component id="da7e3" class="javax.swing.JButton" binding="buttonRefresh">
                     <constraints>
                       <grid row="6" column="0" row-span="1" col-span="1" vsize-policy="0" hsize-policy="3" anchor="0" fill="3" indent="0" use-parent-layout="false"/>
@@ -113,6 +106,13 @@
                       <stringPainted value="false"/>
                       <value value="80"/>
                     </properties>
+                  </component>
+                  <component id="c9103" class="javax.swing.JComboBox" binding="comboBoxPort">
+                    <constraints>
+                      <grid row="5" column="0" row-span="1" col-span="1" vsize-policy="0" hsize-policy="2" anchor="10" fill="1" indent="0" use-parent-layout="false"/>
+                      <gridbag top="0" left="0" bottom="5" right="0" weightx="0.0" weighty="1.0"/>
+                    </constraints>
+                    <properties/>
                   </component>
                 </children>
               </grid>
@@ -152,7 +152,7 @@
                 <children>
                   <component id="208ab" class="javax.swing.JButton" binding="buttonAddRecord">
                     <constraints>
-                      <grid row="1" column="0" row-span="1" col-span="1" vsize-policy="0" hsize-policy="3" anchor="0" fill="1" indent="0" use-parent-layout="false"/>
+                      <grid row="6" column="0" row-span="1" col-span="1" vsize-policy="0" hsize-policy="3" anchor="0" fill="1" indent="0" use-parent-layout="false"/>
                       <gridbag weightx="0.0" weighty="0.0" ipadx="15" ipady="5"/>
                     </constraints>
                     <properties>
@@ -161,10 +161,53 @@
                   </component>
                   <vspacer id="72105">
                     <constraints>
-                      <grid row="0" column="0" row-span="1" col-span="1" vsize-policy="6" hsize-policy="1" anchor="0" fill="2" indent="0" use-parent-layout="false"/>
+                      <grid row="5" column="0" row-span="1" col-span="1" vsize-policy="6" hsize-policy="1" anchor="0" fill="2" indent="0" use-parent-layout="false"/>
                       <gridbag weightx="0.0" weighty="1.0"/>
                     </constraints>
                   </vspacer>
+                  <component id="12951" class="javax.swing.JComboBox" binding="comboBoxSources">
+                    <constraints>
+                      <grid row="1" column="0" row-span="1" col-span="1" vsize-policy="0" hsize-policy="2" anchor="8" fill="1" indent="0" use-parent-layout="false"/>
+                      <gridbag top="0" left="0" bottom="5" right="0" weightx="0.0" weighty="0.0"/>
+                    </constraints>
+                    <properties/>
+                  </component>
+                  <component id="54ec5" class="javax.swing.JButton" binding="buttonEditSource">
+                    <constraints>
+                      <grid row="3" column="0" row-span="1" col-span="1" vsize-policy="0" hsize-policy="3" anchor="0" fill="1" indent="0" use-parent-layout="false"/>
+                      <gridbag top="0" left="0" bottom="5" right="0" weightx="0.0" weighty="0.0" ipady="5"/>
+                    </constraints>
+                    <properties>
+                      <text value="Zmień nazwę źródła"/>
+                    </properties>
+                  </component>
+                  <component id="9883e" class="javax.swing.JLabel">
+                    <constraints>
+                      <grid row="0" column="0" row-span="1" col-span="1" vsize-policy="0" hsize-policy="0" anchor="8" fill="0" indent="0" use-parent-layout="false"/>
+                      <gridbag weightx="0.0" weighty="0.0"/>
+                    </constraints>
+                    <properties>
+                      <text value="Filtruj według źródła:"/>
+                    </properties>
+                  </component>
+                  <component id="b2760" class="javax.swing.JButton" binding="buttonAddSource">
+                    <constraints>
+                      <grid row="2" column="0" row-span="1" col-span="1" vsize-policy="0" hsize-policy="3" anchor="0" fill="1" indent="0" use-parent-layout="false"/>
+                      <gridbag top="0" left="0" bottom="5" right="0" weightx="0.0" weighty="0.0" ipady="5"/>
+                    </constraints>
+                    <properties>
+                      <text value="Dodaj źródło"/>
+                    </properties>
+                  </component>
+                  <component id="364ef" class="javax.swing.JButton" binding="buttonDeleteSource">
+                    <constraints>
+                      <grid row="4" column="0" row-span="1" col-span="1" vsize-policy="0" hsize-policy="3" anchor="0" fill="1" indent="0" use-parent-layout="false"/>
+                      <gridbag top="0" left="0" bottom="5" right="0" weightx="0.0" weighty="0.0" ipady="5"/>
+                    </constraints>
+                    <properties>
+                      <text value="Usuń źródło"/>
+                    </properties>
+                  </component>
                 </children>
               </grid>
               <scrollpane id="cd771">

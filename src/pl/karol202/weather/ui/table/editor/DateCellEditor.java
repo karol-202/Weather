@@ -1,4 +1,4 @@
-package pl.karol202.weather.ui.table;
+package pl.karol202.weather.ui.table.editor;
 
 import javax.swing.*;
 import javax.swing.text.DateFormatter;
