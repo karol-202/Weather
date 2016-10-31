@@ -247,48 +247,63 @@
                 <children>
                   <component id="84348" class="javax.swing.JLabel">
                     <constraints>
-                      <grid row="0" column="0" row-span="1" col-span="1" vsize-policy="0" hsize-policy="0" anchor="8" fill="0" indent="0" use-parent-layout="false"/>
+                      <grid row="0" column="1" row-span="1" col-span="1" vsize-policy="0" hsize-policy="0" anchor="8" fill="0" indent="0" use-parent-layout="false"/>
                       <gridbag weightx="0.0" weighty="0.0"/>
                     </constraints>
                     <properties>
-                      <text value="Wykresy:"/>
+                      <text value="Pomiar:"/>
                     </properties>
                   </component>
                   <hspacer id="210b6">
                     <constraints>
-                      <grid row="0" column="4" row-span="1" col-span="1" vsize-policy="1" hsize-policy="6" anchor="0" fill="1" indent="0" use-parent-layout="false"/>
+                      <grid row="0" column="5" row-span="1" col-span="1" vsize-policy="1" hsize-policy="6" anchor="0" fill="1" indent="0" use-parent-layout="false"/>
                       <gridbag weightx="1.0" weighty="0.0"/>
                     </constraints>
                   </hspacer>
                   <vspacer id="a7685">
                     <constraints>
-                      <grid row="3" column="0" row-span="1" col-span="1" vsize-policy="6" hsize-policy="1" anchor="0" fill="2" indent="0" use-parent-layout="false"/>
+                      <grid row="3" column="1" row-span="1" col-span="1" vsize-policy="6" hsize-policy="1" anchor="0" fill="2" indent="0" use-parent-layout="false"/>
                       <gridbag weightx="0.0" weighty="1.0"/>
                     </constraints>
                   </vspacer>
                   <component id="bd545" class="javax.swing.JCheckBox" binding="checkBoxMeasure">
                     <constraints>
-                      <grid row="1" column="0" row-span="1" col-span="1" vsize-policy="0" hsize-policy="3" anchor="8" fill="0" indent="0" use-parent-layout="false"/>
+                      <grid row="1" column="1" row-span="1" col-span="1" vsize-policy="0" hsize-policy="3" anchor="8" fill="0" indent="0" use-parent-layout="false"/>
                       <gridbag weightx="0.0" weighty="0.0"/>
                     </constraints>
                     <properties>
                       <selected value="true"/>
-                      <text value="Pomiar"/>
+                      <text value="Pokaż"/>
                     </properties>
                   </component>
-                  <component id="7807d" class="javax.swing.JCheckBox" binding="checkBoxForecast">
+                  <component id="f495a" class="javax.swing.JLabel">
                     <constraints>
-                      <grid row="2" column="0" row-span="1" col-span="1" vsize-policy="0" hsize-policy="3" anchor="8" fill="0" indent="0" use-parent-layout="false"/>
+                      <grid row="0" column="3" row-span="1" col-span="2" vsize-policy="0" hsize-policy="0" anchor="8" fill="0" indent="0" use-parent-layout="false"/>
+                      <gridbag top="0" left="10" bottom="0" right="0" weightx="0.0" weighty="0.0"/>
+                    </constraints>
+                    <properties>
+                      <text value="Skala czasu:"/>
+                    </properties>
+                  </component>
+                  <component id="42bb8" class="javax.swing.JSpinner" binding="spinnerScale">
+                    <constraints>
+                      <grid row="1" column="3" row-span="2" col-span="1" vsize-policy="0" hsize-policy="6" anchor="9" fill="1" indent="0" use-parent-layout="false"/>
+                      <gridbag top="0" left="10" bottom="0" right="0" weightx="0.0" weighty="0.0" ipadx="15"/>
+                    </constraints>
+                    <properties/>
+                  </component>
+                  <component id="b7b37" class="javax.swing.JLabel">
+                    <constraints>
+                      <grid row="1" column="4" row-span="1" col-span="1" vsize-policy="0" hsize-policy="0" anchor="8" fill="0" indent="0" use-parent-layout="false"/>
                       <gridbag weightx="0.0" weighty="0.0"/>
                     </constraints>
                     <properties>
-                      <selected value="true"/>
-                      <text value="Prognoza"/>
+                      <text value="dni"/>
                     </properties>
                   </component>
                   <component id="ecb0b" class="javax.swing.JLabel">
                     <constraints>
-                      <grid row="0" column="1" row-span="1" col-span="1" vsize-policy="0" hsize-policy="0" anchor="8" fill="0" indent="0" use-parent-layout="false"/>
+                      <grid row="0" column="0" row-span="1" col-span="1" vsize-policy="0" hsize-policy="0" anchor="8" fill="0" indent="0" use-parent-layout="false"/>
                       <gridbag weightx="0.0" weighty="0.0"/>
                     </constraints>
                     <properties>
@@ -297,7 +312,7 @@
                   </component>
                   <component id="6df56" class="javax.swing.JCheckBox" binding="checkBoxTemperature">
                     <constraints>
-                      <grid row="1" column="1" row-span="1" col-span="1" vsize-policy="0" hsize-policy="3" anchor="8" fill="0" indent="0" use-parent-layout="false"/>
+                      <grid row="1" column="0" row-span="1" col-span="1" vsize-policy="0" hsize-policy="3" anchor="8" fill="0" indent="0" use-parent-layout="false"/>
                       <gridbag weightx="0.0" weighty="0.0"/>
                     </constraints>
                     <properties>
@@ -307,7 +322,7 @@
                   </component>
                   <component id="5f818" class="javax.swing.JCheckBox" binding="checkBoxHumidity">
                     <constraints>
-                      <grid row="2" column="1" row-span="1" col-span="1" vsize-policy="0" hsize-policy="3" anchor="8" fill="0" indent="0" use-parent-layout="false"/>
+                      <grid row="2" column="0" row-span="1" col-span="1" vsize-policy="0" hsize-policy="3" anchor="8" fill="0" indent="0" use-parent-layout="false"/>
                       <gridbag weightx="0.0" weighty="0.0"/>
                     </constraints>
                     <properties>
@@ -315,30 +330,31 @@
                       <text value="Wilgotność"/>
                     </properties>
                   </component>
-                  <component id="f495a" class="javax.swing.JLabel">
+                  <component id="7807d" class="javax.swing.JCheckBox" binding="checkBoxForecast">
                     <constraints>
-                      <grid row="0" column="2" row-span="1" col-span="2" vsize-policy="0" hsize-policy="0" anchor="8" fill="0" indent="0" use-parent-layout="false"/>
-                      <gridbag top="0" left="10" bottom="0" right="0" weightx="0.0" weighty="0.0"/>
-                    </constraints>
-                    <properties>
-                      <text value="Skala czasu:"/>
-                    </properties>
-                  </component>
-                  <component id="42bb8" class="javax.swing.JSpinner" binding="spinnerScale">
-                    <constraints>
-                      <grid row="1" column="2" row-span="2" col-span="1" vsize-policy="0" hsize-policy="6" anchor="9" fill="1" indent="0" use-parent-layout="false"/>
-                      <gridbag top="0" left="10" bottom="0" right="0" weightx="0.0" weighty="0.0" ipadx="15"/>
-                    </constraints>
-                    <properties/>
-                  </component>
-                  <component id="b7b37" class="javax.swing.JLabel">
-                    <constraints>
-                      <grid row="1" column="3" row-span="1" col-span="1" vsize-policy="0" hsize-policy="0" anchor="8" fill="0" indent="0" use-parent-layout="false"/>
+                      <grid row="1" column="2" row-span="1" col-span="1" vsize-policy="0" hsize-policy="3" anchor="8" fill="0" indent="0" use-parent-layout="false"/>
                       <gridbag weightx="0.0" weighty="0.0"/>
                     </constraints>
                     <properties>
-                      <text value="dni"/>
+                      <selected value="true"/>
+                      <text value="Pokaż"/>
                     </properties>
+                  </component>
+                  <component id="ea3b9" class="javax.swing.JLabel">
+                    <constraints>
+                      <grid row="0" column="2" row-span="1" col-span="1" vsize-policy="0" hsize-policy="0" anchor="8" fill="0" indent="0" use-parent-layout="false"/>
+                      <gridbag weightx="0.0" weighty="0.0"/>
+                    </constraints>
+                    <properties>
+                      <text value="Prognoza:"/>
+                    </properties>
+                  </component>
+                  <component id="a5d9b" class="javax.swing.JComboBox" binding="comboBoxSourceGraph">
+                    <constraints>
+                      <grid row="2" column="2" row-span="1" col-span="1" vsize-policy="0" hsize-policy="2" anchor="8" fill="1" indent="0" use-parent-layout="false"/>
+                      <gridbag weightx="0.0" weighty="0.0" ipadx="40"/>
+                    </constraints>
+                    <properties/>
                   </component>
                 </children>
               </grid>

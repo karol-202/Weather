@@ -1,5 +1,6 @@
 package pl.karol202.weather.ui;
 
+import pl.karol202.weather.record.ForecastRecord;
 import pl.karol202.weather.record.Record;
 import pl.karol202.weather.record.RecordsManager;
 
@@ -21,6 +22,7 @@ public class GraphPanel extends JPanel
 	private boolean showHumidity;
 	private int daysVisible;
 	private int offsetPercent;
+	private int currentSourceFilter;
 	
 	private int firstRecordTime;
 	private int lastRecordTime;
@@ -91,6 +93,8 @@ public class GraphPanel extends JPanel
 		Record lastRecord = null;
 		for(Record record : records)
 		{
+			if(record instanceof ForecastRecord && ((ForecastRecord) record).getForecastSource() != currentSourceFilter)
+				continue;
 			if(lastRecord != null)
 			{
 				int x = (int) map(firstVisibleTime, lastVisibleTime, MARGIN, getWidth() - MARGIN, record.getTimeInSeconds());
@@ -136,11 +140,19 @@ public class GraphPanel extends JPanel
 		int first = -1;
 		if(showMeasurement)
 			for(Record record : RecordsManager.getMeasureRecords())
-				if(first == -1 || record.getTimeInSeconds() < first) first = record.getTimeInSeconds();
+				if(isRecordEarlier(record, first)) first = record.getTimeInSeconds();
 		if(showForecast)
 			for(Record record : RecordsManager.getForecastRecords())
-				if(first == -1 || record.getTimeInSeconds() < first) first = record.getTimeInSeconds();
+				if(isRecordEarlier(record, first)) first = record.getTimeInSeconds();
 		return first;
+	}
+	
+	private boolean isRecordEarlier(Record record, int firstTime)
+	{
+		boolean isProper = firstTime == -1 || record.getTimeInSeconds() < firstTime;
+		if(record instanceof ForecastRecord)
+			isProper &= (((ForecastRecord) record).getForecastSource() == currentSourceFilter);
+		return isProper;
 	}
 	
 	private int getLastRecordTime()
@@ -148,35 +160,59 @@ public class GraphPanel extends JPanel
 		int last = -1;
 		if(showMeasurement)
 			for(Record record : RecordsManager.getMeasureRecords())
-				if(last == -1 || record.getTimeInSeconds() > last) last = record.getTimeInSeconds();
+				if(isRecordLater(record, last)) last = record.getTimeInSeconds();
 		if(showForecast)
 			for(Record record : RecordsManager.getForecastRecords())
-				if(last == -1 || record.getTimeInSeconds() > last) last = record.getTimeInSeconds();
+				if(isRecordLater(record, last)) last = record.getTimeInSeconds();
 		return last;
+	}
+	
+	private boolean isRecordLater(Record record, int lastTime)
+	{
+		boolean isProper = lastTime == -1 || record.getTimeInSeconds() > lastTime;
+		if(record instanceof ForecastRecord)
+			isProper &= (((ForecastRecord) record).getForecastSource() == currentSourceFilter);
+		return isProper;
 	}
 	
 	private int getLowestTemperature()
 	{
-		int small = Integer.MIN_VALUE;
+		int low = Integer.MIN_VALUE;
 		if(showMeasurement)
 			for(Record record : RecordsManager.getMeasureRecords())
-				if(small == Integer.MIN_VALUE || record.getTemperature() < small) small = record.getTemperature();
+				if(hasRecordLowerTemperature(record, low)) low = record.getTemperature();
 		if(showForecast)
 			for(Record record : RecordsManager.getForecastRecords())
-				if(small == Integer.MIN_VALUE || record.getTemperature() < small) small = record.getTemperature();
-		return small;
+				if(hasRecordLowerTemperature(record, low)) low = record.getTemperature();
+		return low;
+	}
+	
+	private boolean hasRecordLowerTemperature(Record record, int lowestTemp)
+	{
+		boolean isProper = lowestTemp == Integer.MIN_VALUE || record.getTemperature() < lowestTemp;
+		if(record instanceof ForecastRecord)
+			isProper &= (((ForecastRecord) record).getForecastSource() == currentSourceFilter);
+		return isProper;
 	}
 	
 	private int getHighestTemperature()
 	{
-		int large = Integer.MIN_VALUE;
+		int high = Integer.MIN_VALUE;
 		if(showMeasurement)
 			for(Record record : RecordsManager.getMeasureRecords())
-				if(large == Integer.MIN_VALUE || record.getTemperature() > large) large = record.getTemperature();
+				if(hasRecordHigherTemperature(record, high)) high = record.getTemperature();
 		if(showForecast)
 			for(Record record : RecordsManager.getForecastRecords())
-				if(large == Integer.MIN_VALUE || record.getTemperature() > large) large = record.getTemperature();
-		return large;
+				if(hasRecordHigherTemperature(record, high)) high = record.getTemperature();
+		return high;
+	}
+	
+	private boolean hasRecordHigherTemperature(Record record, int highestTemp)
+	{
+		boolean isProper = highestTemp == Integer.MIN_VALUE || record.getTemperature() > highestTemp;
+		if(record instanceof ForecastRecord)
+			isProper &= (((ForecastRecord) record).getForecastSource() == currentSourceFilter);
+		return isProper;
 	}
 	
 	public int getTimeScaleRatio()
@@ -192,7 +228,6 @@ public class GraphPanel extends JPanel
 	public void setShowMeasurement(boolean showMeasurement)
 	{
 		this.showMeasurement = showMeasurement;
-		updateValues();
 	}
 	
 	public boolean isShowForecast()
@@ -203,7 +238,6 @@ public class GraphPanel extends JPanel
 	public void setShowForecast(boolean showForecast)
 	{
 		this.showForecast = showForecast;
-		updateValues();
 	}
 	
 	public boolean isShowTemperature()
@@ -214,7 +248,6 @@ public class GraphPanel extends JPanel
 	public void setShowTemperature(boolean showTemperature)
 	{
 		this.showTemperature = showTemperature;
-		updateValues();
 	}
 	
 	public boolean isShowHumidity()
@@ -225,7 +258,6 @@ public class GraphPanel extends JPanel
 	public void setShowHumidity(boolean showHumidity)
 	{
 		this.showHumidity = showHumidity;
-		updateValues();
 	}
 	
 	public int getDaysVisible()
@@ -236,7 +268,6 @@ public class GraphPanel extends JPanel
 	public void setDaysVisible(int daysVisible)
 	{
 		this.daysVisible = daysVisible;
-		updateValues();
 	}
 	
 	public int getOffsetPercent()
@@ -247,6 +278,15 @@ public class GraphPanel extends JPanel
 	public void setOffsetPercent(int offsetPercent)
 	{
 		this.offsetPercent = offsetPercent;
-		updateValues();
+	}
+	
+	public int getCurrentSourceFilter()
+	{
+		return currentSourceFilter;
+	}
+	
+	public void setCurrentSourceFilter(int currentSourceFilter)
+	{
+		this.currentSourceFilter = currentSourceFilter;
 	}
 }
