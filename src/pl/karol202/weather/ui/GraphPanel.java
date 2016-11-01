@@ -23,12 +23,12 @@ public class GraphPanel extends JPanel
 	private int daysVisible;
 	private int offsetPercent;
 	private int currentSourceFilter;
+	private int forecastCreationTimeFilter;
 	
 	private int firstRecordTime;
 	private int lastRecordTime;
 	private int lowestTemperature;
 	private int highestTemperature;
-	
 	private int firstVisibleTime;
 	private int lastVisibleTime;
 	
@@ -58,9 +58,10 @@ public class GraphPanel extends JPanel
 	private void drawGrid(Graphics2D g)
 	{
 		g.setColor(Color.BLACK);
-		g.drawLine(MARGIN, MARGIN, MARGIN, getHeight() - MARGIN);
-		g.drawLine(MARGIN, getHeight() - MARGIN, getWidth() - MARGIN, getHeight() - MARGIN);
-		g.drawLine(getWidth() - MARGIN, MARGIN, getWidth() - MARGIN, getHeight() - MARGIN);
+		g.drawLine(MARGIN, MARGIN, MARGIN, getHeight() - MARGIN); //Left side
+		//g.drawLine(MARGIN, MARGIN, getWidth() - MARGIN, MARGIN); //Top side
+		g.drawLine(getWidth() - MARGIN, MARGIN, getWidth() - MARGIN, getHeight() - MARGIN); //Right side
+		g.drawLine(MARGIN, getHeight() - MARGIN, getWidth() - MARGIN, getHeight() - MARGIN); //Bottom side
 	}
 	
 	private void drawTexts(Graphics2D g)
@@ -84,8 +85,10 @@ public class GraphPanel extends JPanel
 	
 	private void drawData(Graphics2D g)
 	{
-		if(showMeasurement && RecordsManager.getMeasureRecords() != null) drawRecords(g, RecordsManager.getMeasureRecords(), Color.RED, Color.BLUE);
-		if(showForecast && RecordsManager.getForecastRecords() != null) drawRecords(g, RecordsManager.getForecastRecords(), Color.ORANGE, SystemColor.CYAN);
+		if(showMeasurement && RecordsManager.getMeasureRecords() != null)
+			drawRecords(g, RecordsManager.getMeasureRecords(), Color.RED, Color.BLUE);
+		if(showForecast && RecordsManager.getForecastRecords() != null)
+			drawRecords(g, RecordsManager.getForecastRecords(), Color.ORANGE, SystemColor.CYAN);
 	}
 	
 	private void drawRecords(Graphics2D g, ArrayList<? extends Record> records, Color colorTemperature, Color colorHumidity)
@@ -93,8 +96,12 @@ public class GraphPanel extends JPanel
 		Record lastRecord = null;
 		for(Record record : records)
 		{
-			if(record instanceof ForecastRecord && ((ForecastRecord) record).getForecastSource() != currentSourceFilter)
-				continue;
+			if(record instanceof ForecastRecord)
+			{
+				ForecastRecord fr = (ForecastRecord) record;
+				if(fr.getForecastSource() != currentSourceFilter) continue;
+				if(fr.getCreationTimeInSeconds() != forecastCreationTimeFilter) continue;
+			}
 			if(lastRecord != null)
 			{
 				int x = (int) map(firstVisibleTime, lastVisibleTime, MARGIN, getWidth() - MARGIN, record.getTimeInSeconds());
@@ -129,50 +136,82 @@ public class GraphPanel extends JPanel
 		lastRecordTime = getLastRecordTime();
 		lowestTemperature = getLowestTemperature();
 		highestTemperature = getHighestTemperature();
-		
-		firstVisibleTime = firstRecordTime + Math.round(((lastRecordTime - firstRecordTime) - (SECONDS_IN_DAY * daysVisible)) * (offsetPercent / 100f));
-		lastVisibleTime = firstVisibleTime + (SECONDS_IN_DAY * daysVisible);
+		firstVisibleTime = calcFirstVisibleTime();
+		lastVisibleTime = calcLastVisbleTime();
 		repaint();
 	}
 	
 	private int getFirstRecordTime()
 	{
-		int first = -1;
+		Record first = null;
 		if(showMeasurement)
-			for(Record record : RecordsManager.getMeasureRecords())
-				if(isRecordEarlier(record, first)) first = record.getTimeInSeconds();
+			first = getFirstRecordFromList(RecordsManager.getMeasureRecords());
 		if(showForecast)
-			for(Record record : RecordsManager.getForecastRecords())
-				if(isRecordEarlier(record, first)) first = record.getTimeInSeconds();
+		{
+			Record firstFromForecastRecords = getFirstRecordFromList(RecordsManager.getForecastRecords());
+			if(isRecordEarlier(firstFromForecastRecords, first))
+				first = firstFromForecastRecords;
+		}
+		return first != null ? first.getTimeInSeconds() : 0;
+	}
+	
+	private Record getFirstRecordFromList(ArrayList<? extends Record> records)
+	{
+		Record first = null;
+		for(Record record : records)
+			if(isRecordEarlierAndProper(record, first)) first = record;
 		return first;
 	}
 	
-	private boolean isRecordEarlier(Record record, int firstTime)
+	private boolean isRecordEarlierAndProper(Record current, Record first)
 	{
-		boolean isProper = firstTime == -1 || record.getTimeInSeconds() < firstTime;
-		if(record instanceof ForecastRecord)
-			isProper &= (((ForecastRecord) record).getForecastSource() == currentSourceFilter);
-		return isProper;
+		return isRecordEarlier(current, first) && isRecordProper(current);
+	}
+	
+	private boolean isRecordEarlier(Record current, Record first)
+	{
+		return current != null && (first == null || current.getTimeInSeconds() < first.getTimeInSeconds());
 	}
 	
 	private int getLastRecordTime()
 	{
-		int last = -1;
+		Record last = null;
 		if(showMeasurement)
-			for(Record record : RecordsManager.getMeasureRecords())
-				if(isRecordLater(record, last)) last = record.getTimeInSeconds();
+			last = getLastRecordFromList(RecordsManager.getMeasureRecords());
 		if(showForecast)
-			for(Record record : RecordsManager.getForecastRecords())
-				if(isRecordLater(record, last)) last = record.getTimeInSeconds();
+		{
+			Record lastFromForecastRecords = getLastRecordFromList(RecordsManager.getForecastRecords());
+			if(isRecordLater(lastFromForecastRecords, last))
+				last = lastFromForecastRecords;
+		}
+		return last != null ? last.getTimeInSeconds() : 0;
+	}
+	
+	private Record getLastRecordFromList(ArrayList<? extends Record> records)
+	{
+		Record last = null;
+		for(Record record : records)
+			if(isRecordLaterAndProper(record, last)) last = record;
 		return last;
 	}
 	
-	private boolean isRecordLater(Record record, int lastTime)
+	private boolean isRecordLaterAndProper(Record current, Record last)
 	{
-		boolean isProper = lastTime == -1 || record.getTimeInSeconds() > lastTime;
-		if(record instanceof ForecastRecord)
-			isProper &= (((ForecastRecord) record).getForecastSource() == currentSourceFilter);
-		return isProper;
+		return isRecordLater(current, last) && isRecordProper(current);
+	}
+	
+	private boolean isRecordLater(Record current, Record last)
+	{
+		return current != null && (last == null || current.getTimeInSeconds() > last.getTimeInSeconds());
+	}
+	
+	private boolean isRecordProper(Record record)
+	{
+		if(!(record instanceof ForecastRecord)) return true;
+		ForecastRecord fr = (ForecastRecord) record;
+		if(fr.getForecastSource() != currentSourceFilter) return false;
+		if(fr.getCreationTimeInSeconds() != forecastCreationTimeFilter) return false;
+		return true;
 	}
 	
 	private int getLowestTemperature()
@@ -215,14 +254,19 @@ public class GraphPanel extends JPanel
 		return isProper;
 	}
 	
+	private int calcFirstVisibleTime()
+	{
+		return firstRecordTime + Math.round(((lastRecordTime - firstRecordTime) - (SECONDS_IN_DAY * daysVisible)) * (offsetPercent / 100f));
+	}
+	
+	private int calcLastVisbleTime()
+	{
+		return firstVisibleTime + (SECONDS_IN_DAY * daysVisible);
+	}
+	
 	public int getTimeScaleRatio()
 	{
 		return Math.round((float) daysVisible / ((lastRecordTime - firstRecordTime) / SECONDS_IN_DAY) * 100);
-	}
-	
-	public boolean isShowMeasurement()
-	{
-		return showMeasurement;
 	}
 	
 	public void setShowMeasurement(boolean showMeasurement)
@@ -230,19 +274,9 @@ public class GraphPanel extends JPanel
 		this.showMeasurement = showMeasurement;
 	}
 	
-	public boolean isShowForecast()
-	{
-		return showForecast;
-	}
-	
 	public void setShowForecast(boolean showForecast)
 	{
 		this.showForecast = showForecast;
-	}
-	
-	public boolean isShowTemperature()
-	{
-		return showTemperature;
 	}
 	
 	public void setShowTemperature(boolean showTemperature)
@@ -250,19 +284,9 @@ public class GraphPanel extends JPanel
 		this.showTemperature = showTemperature;
 	}
 	
-	public boolean isShowHumidity()
-	{
-		return showHumidity;
-	}
-	
 	public void setShowHumidity(boolean showHumidity)
 	{
 		this.showHumidity = showHumidity;
-	}
-	
-	public int getDaysVisible()
-	{
-		return daysVisible;
 	}
 	
 	public void setDaysVisible(int daysVisible)
@@ -270,23 +294,18 @@ public class GraphPanel extends JPanel
 		this.daysVisible = daysVisible;
 	}
 	
-	public int getOffsetPercent()
-	{
-		return offsetPercent;
-	}
-	
 	public void setOffsetPercent(int offsetPercent)
 	{
 		this.offsetPercent = offsetPercent;
 	}
 	
-	public int getCurrentSourceFilter()
-	{
-		return currentSourceFilter;
-	}
-	
 	public void setCurrentSourceFilter(int currentSourceFilter)
 	{
 		this.currentSourceFilter = currentSourceFilter;
+	}
+	
+	public void setForecastCreationTimeFilter(int time)
+	{
+		this.forecastCreationTimeFilter = time;
 	}
 }

@@ -3,10 +3,15 @@ package pl.karol202.weather.ui;
 import pl.karol202.weather.record.RecordsManager;
 
 import javax.swing.*;
+import javax.swing.text.DateFormatter;
+import javax.swing.text.DefaultFormatterFactory;
+import java.text.DateFormat;
+import java.util.Date;
 
 public class GraphTab
 {
 	private SpinnerNumberModel spinnerModelNumber;
+	private DateFormatter dateFormatter;
 	
 	private GraphPanel graph;
 	private JScrollBar scrollBarOffset;
@@ -16,10 +21,12 @@ public class GraphTab
 	private JCheckBox checkBoxHumidity;
 	private JSpinner spinnerScale;
 	private JComboBox<String> comboBoxSource;
+	private JFormattedTextField ftfForecastCreationTime;
 	
 	public void init()
 	{
 		spinnerModelNumber = new SpinnerNumberModel(5, 1, 100, 1);
+		dateFormatter = new DateFormatter(DateFormat.getDateTimeInstance());
 		
 		scrollBarOffset.addAdjustmentListener(e -> updateGraph());
 		
@@ -33,6 +40,9 @@ public class GraphTab
 		
 		updateSources();
 		comboBoxSource.addItemListener(e -> updateGraph());
+		
+		ftfForecastCreationTime.setFormatterFactory(new DefaultFormatterFactory(dateFormatter));
+		ftfForecastCreationTime.addActionListener(e -> updateGraph());
 		
 		updateGraph();
 	}
@@ -51,12 +61,30 @@ public class GraphTab
 		graph.setShowTemperature(checkBoxTemperature.isSelected());
 		graph.setShowHumidity(checkBoxHumidity.isSelected());
 		graph.setDaysVisible((int) spinnerScale.getValue());
-		int visible = scrollBarOffset.getVisibleAmount();
-		int offset = visible < 100 ? scrollBarOffset.getValue() * 100 / (100 - visible) : 0;
-		graph.setOffsetPercent(offset);
+		graph.setOffsetPercent(calcGraphOffset());
 		graph.setCurrentSourceFilter(comboBoxSource.getSelectedIndex());
+		graph.setForecastCreationTimeFilter(getForecastCreationTimeFilter());
 		graph.updateValues();
 		
+		updateScrollBar();
+	}
+	
+	private int calcGraphOffset()
+	{
+		int visible = scrollBarOffset.getVisibleAmount();
+		return visible < 100 ? scrollBarOffset.getValue() * 100 / (100 - visible) : 0;
+	}
+	
+	private int getForecastCreationTimeFilter()
+	{
+		Object value = ftfForecastCreationTime.getValue();
+		if(value == null) return -1;
+		long timeInMillis = ((Date) value).getTime();
+		return (int) (timeInMillis / 1000);
+	}
+	
+	private void updateScrollBar()
+	{
 		int timeRatio = graph.getTimeScaleRatio();
 		scrollBarOffset.setVisibleAmount(timeRatio);
 		if(scrollBarOffset.getValue() + timeRatio > scrollBarOffset.getMaximum())
@@ -101,5 +129,10 @@ public class GraphTab
 	public void setComboBoxSource(JComboBox<String> comboBoxSource)
 	{
 		this.comboBoxSource = comboBoxSource;
+	}
+	
+	public void setFtfForecastCreationTime(JFormattedTextField ftf)
+	{
+		this.ftfForecastCreationTime = ftf;
 	}
 }

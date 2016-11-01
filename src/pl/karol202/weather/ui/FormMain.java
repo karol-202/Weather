@@ -37,6 +37,7 @@ public class FormMain extends JFrame
 	private JCheckBox checkBoxHumidity;
 	private JSpinner spinnerScale;
 	private JComboBox<String> comboBoxSourceGraph;
+	private JFormattedTextField ftfForecastCreationTime;
 	
 	public FormMain()
 	{
@@ -97,6 +98,7 @@ public class FormMain extends JFrame
 		graphTab.setCheckBoxHumidity(checkBoxHumidity);
 		graphTab.setSpinnerScale(spinnerScale);
 		graphTab.setComboBoxSource(comboBoxSourceGraph);
+		graphTab.setFtfForecastCreationTime(ftfForecastCreationTime);
 		graphTab.init();
 	}
 	
