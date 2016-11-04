@@ -84,9 +84,10 @@ public class RecordsManager
 	
 	private static int readByte(InputStream stream) throws IOException
 	{
-		int data = stream.read();
-		if(data == -1) throw new RuntimeException("File reading error: Unexpected end of stream.");
-		return data;
+		byte[] b = new byte[1];
+		int result = stream.read(b);
+		if(result == -1) throw new RuntimeException("File reading error: Unexpected end of stream.");
+		return b[0];
 	}
 	
 	private static byte[] readBytes(InputStream stream, int length) throws IOException

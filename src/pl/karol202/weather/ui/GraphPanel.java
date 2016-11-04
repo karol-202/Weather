@@ -6,6 +6,8 @@ import pl.karol202.weather.record.RecordsManager;
 
 import javax.swing.*;
 import java.awt.*;
+import java.awt.event.MouseAdapter;
+import java.awt.event.MouseEvent;
 import java.text.DateFormat;
 import java.util.ArrayList;
 import java.util.Date;
@@ -41,6 +43,11 @@ public class GraphPanel extends JPanel
 		this.showHumidity = true;
 		this.daysVisible = 1;
 		this.offsetPercent = 0;
+		
+		this.addMouseMotionListener(new MouseAdapter() {
+			@Override
+			public void mouseMoved(MouseEvent e) { GraphPanel.this.onMouseMoved(e.getX()); }
+		});
 	}
 	
 	@Override
@@ -130,6 +137,28 @@ public class GraphPanel extends JPanel
 		return (value - srcMin) / (srcMax - srcMin) * (dstMax - dstMin) + dstMin;
 	}
 	
+	private void onMouseMoved(int x)
+	{
+		int time = (int) map(0, getWidth(), firstVisibleTime, lastVisibleTime, x);
+		
+	}
+	
+	private ArrayList<Record> getClosestRecords(int time)
+	{
+		ArrayList<Record> records = new ArrayList<>();
+		//for(Record record : RecordsManager.getMeasureRecords())
+		return null;
+	}
+	
+	private int compareRecords(int destination, Record closest, Record current)
+	{
+		int closestLength = Math.abs(closest.getTimeInSeconds() - destination);
+		int currentLength = Math.abs(current.getTimeInSeconds() - destination);
+		if(currentLength > closestLength) return 1;
+		else if(currentLength < closestLength) return -1;
+		else return 0;
+	}
+	
 	public void updateValues()
 	{
 		firstRecordTime = getFirstRecordTime();
@@ -205,6 +234,60 @@ public class GraphPanel extends JPanel
 		return current != null && (last == null || current.getTimeInSeconds() > last.getTimeInSeconds());
 	}
 	
+	private int getLowestTemperature()
+	{
+		Record lowest = null;
+		if(showMeasurement)
+			lowest = getRecordWithLowestTemperaure(RecordsManager.getMeasureRecords());
+		if(showForecast)
+		{
+			Record lowestFromForecastRecords = getRecordWithLowestTemperaure(RecordsManager.getForecastRecords());
+			if(hasRecordLowerTemperature(lowestFromForecastRecords, lowest))
+				lowest = lowestFromForecastRecords;
+		}
+		return lowest != null ? lowest.getTemperature() : 0;
+	}
+	
+	private Record getRecordWithLowestTemperaure(ArrayList<? extends Record> records)
+	{
+		Record lowest = null;
+		for(Record record : records)
+			if(hasRecordLowerTemperature(record, lowest) && isRecordProper(record)) lowest = record;
+		return lowest;
+	}
+	
+	private boolean hasRecordLowerTemperature(Record current, Record lowest)
+	{
+		return current != null && (lowest == null || current.getTemperature() < lowest.getTemperature());
+	}
+	
+	private int getHighestTemperature()
+	{
+		Record highest = null;
+		if(showMeasurement)
+			highest = getRecordWithHighestTemperature(RecordsManager.getMeasureRecords());
+		if(showForecast)
+		{
+			Record highestFromForecastRecords = getRecordWithHighestTemperature(RecordsManager.getForecastRecords());
+			if(hasRecordHigherTemperature(highestFromForecastRecords, highest))
+				highest = highestFromForecastRecords;
+		}
+		return highest != null ? highest.getTemperature() : 1;
+	}
+	
+	private Record getRecordWithHighestTemperature(ArrayList<? extends Record> records)
+	{
+		Record highest = null;
+		for(Record record : records)
+			if(hasRecordHigherTemperature(record, highest) && isRecordProper(record)) highest = record;
+		return highest;
+	}
+	
+	private boolean hasRecordHigherTemperature(Record current, Record highest)
+	{
+		return current != null && (highest == null || current.getTemperature() > highest.getTemperature());
+	}
+	
 	private boolean isRecordProper(Record record)
 	{
 		if(!(record instanceof ForecastRecord)) return true;
@@ -212,46 +295,6 @@ public class GraphPanel extends JPanel
 		if(fr.getForecastSource() != currentSourceFilter) return false;
 		if(fr.getCreationTimeInSeconds() != forecastCreationTimeFilter) return false;
 		return true;
-	}
-	
-	private int getLowestTemperature()
-	{
-		int low = Integer.MIN_VALUE;
-		if(showMeasurement)
-			for(Record record : RecordsManager.getMeasureRecords())
-				if(hasRecordLowerTemperature(record, low)) low = record.getTemperature();
-		if(showForecast)
-			for(Record record : RecordsManager.getForecastRecords())
-				if(hasRecordLowerTemperature(record, low)) low = record.getTemperature();
-		return low;
-	}
-	
-	private boolean hasRecordLowerTemperature(Record record, int lowestTemp)
-	{
-		boolean isProper = lowestTemp == Integer.MIN_VALUE || record.getTemperature() < lowestTemp;
-		if(record instanceof ForecastRecord)
-			isProper &= (((ForecastRecord) record).getForecastSource() == currentSourceFilter);
-		return isProper;
-	}
-	
-	private int getHighestTemperature()
-	{
-		int high = Integer.MIN_VALUE;
-		if(showMeasurement)
-			for(Record record : RecordsManager.getMeasureRecords())
-				if(hasRecordHigherTemperature(record, high)) high = record.getTemperature();
-		if(showForecast)
-			for(Record record : RecordsManager.getForecastRecords())
-				if(hasRecordHigherTemperature(record, high)) high = record.getTemperature();
-		return high;
-	}
-	
-	private boolean hasRecordHigherTemperature(Record record, int highestTemp)
-	{
-		boolean isProper = highestTemp == Integer.MIN_VALUE || record.getTemperature() > highestTemp;
-		if(record instanceof ForecastRecord)
-			isProper &= (((ForecastRecord) record).getForecastSource() == currentSourceFilter);
-		return isProper;
 	}
 	
 	private int calcFirstVisibleTime()
