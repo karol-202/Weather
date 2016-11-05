@@ -4,10 +4,12 @@ import javax.swing.*;
 import javax.swing.text.DefaultFormatterFactory;
 import javax.swing.text.NumberFormatter;
 import java.awt.*;
+import java.awt.event.FocusEvent;
+import java.awt.event.FocusListener;
 import java.text.NumberFormat;
 import java.text.ParseException;
 
-public class IntegerCellEditor extends DefaultCellEditor
+public class IntegerCellEditor extends DefaultCellEditor implements FocusListener
 {
 	private JFormattedTextField textField;
 	
@@ -17,6 +19,7 @@ public class IntegerCellEditor extends DefaultCellEditor
 		textField = (JFormattedTextField) getComponent();
 		textField.setHorizontalAlignment(SwingConstants.TRAILING);
 		textField.setFocusLostBehavior(JFormattedTextField.PERSIST);
+		textField.addFocusListener(this);
 		
 		NumberFormatter formatter = new NumberFormatter(NumberFormat.getIntegerInstance());
 		formatter.setMinimum(min);
@@ -30,6 +33,7 @@ public class IntegerCellEditor extends DefaultCellEditor
 		JFormattedTextField textField =
 				(JFormattedTextField) super.getTableCellEditorComponent(table, value, isSelected, row, column);
 		textField.setValue(value);
+		SwingUtilities.invokeLater(textField::selectAll);
 		return textField;
 	}
 	
@@ -53,4 +57,13 @@ public class IntegerCellEditor extends DefaultCellEditor
 		}
 		return false;
 	}
+	
+	@Override
+	public void focusGained(FocusEvent e)
+	{
+		SwingUtilities.invokeLater(textField::selectAll);
+	}
+	
+	@Override
+	public void focusLost(FocusEvent e) { }
 }
