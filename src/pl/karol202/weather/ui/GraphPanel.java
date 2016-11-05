@@ -11,6 +11,7 @@ import java.awt.event.MouseEvent;
 import java.text.DateFormat;
 import java.util.ArrayList;
 import java.util.Date;
+import java.util.HashMap;
 
 public class GraphPanel extends JPanel
 {
@@ -26,6 +27,7 @@ public class GraphPanel extends JPanel
 	private int offsetPercent;
 	private int currentSourceFilter;
 	private int forecastCreationTimeFilter;
+	private boolean forecastCreationTimeFilterNewest;
 	
 	private int firstRecordTime;
 	private int lastRecordTime;
@@ -33,6 +35,7 @@ public class GraphPanel extends JPanel
 	private int highestTemperature;
 	private int firstVisibleTime;
 	private int lastVisibleTime;
+	private HashMap<Integer, ForecastRecord> newestForecastRecords;
 	
 	public GraphPanel()
 	{
@@ -42,7 +45,10 @@ public class GraphPanel extends JPanel
 		this.showTemperature = true;
 		this.showHumidity = true;
 		this.daysVisible = 1;
-		this.offsetPercent = 0;
+		this.currentSourceFilter = -1;
+		this.forecastCreationTimeFilterNewest = true;
+		
+		this.newestForecastRecords = new HashMap<>();
 		
 		this.addMouseMotionListener(new MouseAdapter() {
 			@Override
@@ -66,7 +72,6 @@ public class GraphPanel extends JPanel
 	{
 		g.setColor(Color.BLACK);
 		g.drawLine(MARGIN, MARGIN, MARGIN, getHeight() - MARGIN); //Left side
-		//g.drawLine(MARGIN, MARGIN, getWidth() - MARGIN, MARGIN); //Top side
 		g.drawLine(getWidth() - MARGIN, MARGIN, getWidth() - MARGIN, getHeight() - MARGIN); //Right side
 		g.drawLine(MARGIN, getHeight() - MARGIN, getWidth() - MARGIN, getHeight() - MARGIN); //Bottom side
 	}
@@ -103,12 +108,7 @@ public class GraphPanel extends JPanel
 		Record lastRecord = null;
 		for(Record record : records)
 		{
-			if(record instanceof ForecastRecord)
-			{
-				ForecastRecord fr = (ForecastRecord) record;
-				if(fr.getForecastSource() != currentSourceFilter) continue;
-				if(fr.getCreationTimeInSeconds() != forecastCreationTimeFilter) continue;
-			}
+			if(!isRecordProper(record)) continue;
 			if(lastRecord != null)
 			{
 				int x = (int) map(firstVisibleTime, lastVisibleTime, MARGIN, getWidth() - MARGIN, record.getTimeInSeconds());
@@ -167,7 +167,21 @@ public class GraphPanel extends JPanel
 		highestTemperature = getHighestTemperature();
 		firstVisibleTime = calcFirstVisibleTime();
 		lastVisibleTime = calcLastVisbleTime();
+		updateNewestRecordsMap();
+		
 		repaint();
+	}
+	
+	private void updateNewestRecordsMap()
+	{
+		newestForecastRecords.clear();
+		for(ForecastRecord record : RecordsManager.getForecastRecords())
+		{
+			int time = record.getTimeInSeconds();
+			if(newestForecastRecords.containsKey(time))
+				if(record.getCreationTimeInSeconds() >= newestForecastRecords.get(time).getCreationTimeInSeconds()) continue;
+			newestForecastRecords.put(time, record);
+		}
 	}
 	
 	private int getFirstRecordTime()
@@ -290,10 +304,16 @@ public class GraphPanel extends JPanel
 	
 	private boolean isRecordProper(Record record)
 	{
+		if(record == null) return false;
 		if(!(record instanceof ForecastRecord)) return true;
 		ForecastRecord fr = (ForecastRecord) record;
 		if(fr.getForecastSource() != currentSourceFilter) return false;
-		if(fr.getCreationTimeInSeconds() != forecastCreationTimeFilter) return false;
+		if(forecastCreationTimeFilterNewest)
+		{
+			if(!newestForecastRecords.containsValue(fr)) return false;
+		}
+		else
+			if(fr.getCreationTimeInSeconds() != forecastCreationTimeFilter) return false;
 		return true;
 	}
 	
@@ -350,5 +370,10 @@ public class GraphPanel extends JPanel
 	public void setForecastCreationTimeFilter(int time)
 	{
 		this.forecastCreationTimeFilter = time;
+	}
+	
+	public void setForecastCreationTimeFilterNewest(boolean newest)
+	{
+		this.forecastCreationTimeFilterNewest = newest;
 	}
 }

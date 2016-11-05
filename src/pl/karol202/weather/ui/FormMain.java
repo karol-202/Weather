@@ -38,6 +38,8 @@ public class FormMain extends JFrame
 	private JSpinner spinnerScale;
 	private JComboBox<String> comboBoxSourceGraph;
 	private JFormattedTextField ftfForecastCreationTime;
+	private JRadioButton radioFilterManual;
+	private JRadioButton radioFilterNewest;
 	
 	public FormMain()
 	{
@@ -92,13 +94,15 @@ public class FormMain extends JFrame
 		graphTab = new GraphTab();
 		graphTab.setGraph(graph);
 		graphTab.setScrollBarOffset(scrollBarOffset);
+		graphTab.setSpinnerScale(spinnerScale);
 		graphTab.setCheckBoxMeasure(checkBoxMeasure);
 		graphTab.setCheckBoxForecast(checkBoxForecast);
 		graphTab.setCheckBoxTemperature(checkBoxTemperature);
 		graphTab.setCheckBoxHumidity(checkBoxHumidity);
-		graphTab.setSpinnerScale(spinnerScale);
 		graphTab.setComboBoxSource(comboBoxSourceGraph);
 		graphTab.setFtfForecastCreationTime(ftfForecastCreationTime);
+		graphTab.setRadioFilterManual(radioFilterManual);
+		graphTab.setRadioFilterNewest(radioFilterNewest);
 		graphTab.init();
 	}
 	

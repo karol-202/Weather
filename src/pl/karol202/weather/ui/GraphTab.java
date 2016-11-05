@@ -15,13 +15,15 @@ public class GraphTab
 	
 	private GraphPanel graph;
 	private JScrollBar scrollBarOffset;
+	private JSpinner spinnerScale;
 	private JCheckBox checkBoxMeasure;
 	private JCheckBox checkBoxForecast;
 	private JCheckBox checkBoxTemperature;
 	private JCheckBox checkBoxHumidity;
-	private JSpinner spinnerScale;
 	private JComboBox<String> comboBoxSource;
 	private JFormattedTextField ftfForecastCreationTime;
+	private JRadioButton radioFilterManual;
+	private JRadioButton radioFilterNewest;
 	
 	public void init()
 	{
@@ -31,7 +33,7 @@ public class GraphTab
 		scrollBarOffset.addAdjustmentListener(e -> updateGraph());
 		
 		checkBoxMeasure.addActionListener(e -> updateGraph());
-		checkBoxForecast.addActionListener(e -> updateGraph());
+		checkBoxForecast.addActionListener(e -> toggleForecast(checkBoxForecast.isSelected()));
 		checkBoxTemperature.addActionListener(e -> updateGraph());
 		checkBoxHumidity.addActionListener(e -> updateGraph());
 		
@@ -43,6 +45,9 @@ public class GraphTab
 		
 		ftfForecastCreationTime.setFormatterFactory(new DefaultFormatterFactory(dateFormatter));
 		ftfForecastCreationTime.addActionListener(e -> updateGraph());
+		
+		radioFilterManual.addActionListener(e -> updateForecastCreationFilter());
+		radioFilterNewest.addActionListener(e -> updateForecastCreationFilter());
 		
 		updateGraph();
 	}
@@ -64,6 +69,7 @@ public class GraphTab
 		graph.setOffsetPercent(calcGraphOffset());
 		graph.setCurrentSourceFilter(comboBoxSource.getSelectedIndex());
 		graph.setForecastCreationTimeFilter(getForecastCreationTimeFilter());
+		graph.setForecastCreationTimeFilterNewest(radioFilterNewest.isSelected());
 		graph.updateValues();
 		
 		updateScrollBar();
@@ -91,6 +97,23 @@ public class GraphTab
 			scrollBarOffset.setValue(scrollBarOffset.getMaximum() - timeRatio);
 	}
 	
+	private void toggleForecast(boolean enabled)
+	{
+		comboBoxSource.setEnabled(enabled);
+		radioFilterManual.setEnabled(enabled);
+		radioFilterNewest.setEnabled(enabled);
+		
+		updateForecastCreationFilter();
+		updateGraph();
+	}
+	
+	private void updateForecastCreationFilter()
+	{
+		ftfForecastCreationTime.setEnabled(radioFilterManual.isSelected());
+		
+		updateGraph();
+	}
+	
 	public void setGraph(GraphPanel graph)
 	{
 		this.graph = graph;
@@ -99,6 +122,11 @@ public class GraphTab
 	public void setScrollBarOffset(JScrollBar scrollBarOffset)
 	{
 		this.scrollBarOffset = scrollBarOffset;
+	}
+	
+	public void setSpinnerScale(JSpinner spinnerScale)
+	{
+		this.spinnerScale = spinnerScale;
 	}
 	
 	public void setCheckBoxMeasure(JCheckBox checkBoxMeasure)
@@ -121,11 +149,6 @@ public class GraphTab
 		this.checkBoxHumidity = checkBoxHumidity;
 	}
 	
-	public void setSpinnerScale(JSpinner spinnerScale)
-	{
-		this.spinnerScale = spinnerScale;
-	}
-	
 	public void setComboBoxSource(JComboBox<String> comboBoxSource)
 	{
 		this.comboBoxSource = comboBoxSource;
@@ -134,5 +157,15 @@ public class GraphTab
 	public void setFtfForecastCreationTime(JFormattedTextField ftf)
 	{
 		this.ftfForecastCreationTime = ftf;
+	}
+	
+	public void setRadioFilterManual(JRadioButton radioFilterManual)
+	{
+		this.radioFilterManual = radioFilterManual;
+	}
+	
+	public void setRadioFilterNewest(JRadioButton radioFilterNewest)
+	{
+		this.radioFilterNewest = radioFilterNewest;
 	}
 }
