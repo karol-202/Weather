@@ -1,6 +1,7 @@
 #include <DHT.h>
 #include <EEPROM.h>
 #include <Time.h>
+#include <LiquidCrystal.h>
 
 #define PIN_DHT 8
 #define PIN_LED 13
@@ -20,6 +21,7 @@ struct Record
 };
 
 DHT dht(PIN_DHT, DHT11);
+LiquidCrystal lcd(2, 3, 4, 5, 6, 7);
 int measureDelay;
 
 void setup()
@@ -34,6 +36,8 @@ void setup()
   setTime(time);
 
   measureDelay = 10; //Czekaj 10 sekund przed pierwszym zapisem
+
+  lcd.begin(16, 2);
 }
 
 void loop()
@@ -61,10 +65,9 @@ void loop()
       case MESSAGE_RESET:
         clearAll();
         break;
-      case 65:
-        for(int i = 0; i < 1024; i++) Serial.write(EEPROM.read(i));
       }
     }
+    updateLCD();
     delay(500); //Czekaj 0.5s przed kolejnym sprawdzeniem
   }
 
@@ -157,4 +160,38 @@ void longToBytes(unsigned long number, byte* bytes)
   bytes[1] = (number >> 8 ) & 0xff;
   bytes[2] = (number >> 16) & 0xff;
   bytes[3] = (number >> 24) & 0xff;
+}
+
+void updateLCD()
+{
+  int temperature = (int) dht.readTemperature();
+  int humidity = (int) dht.readHumidity();
+  lcd.clear();
+  updateLCDDate();
+  updateLCDWeather(temperature, humidity);
+}
+
+void updateLCDDate()
+{
+  String date = "";
+  date += (day() < 10 ? "0" : "") + String(day()) + ".";
+  date += (month() < 10 ? "0" : "") + String(month()) + ".";
+  date += (year() < 10 ? "0" : "") + String(year()).substring(2) + " ";
+  date += (hour() < 10 ? "0" : "") + String(hour()) + ":";
+  date += (minute() < 10 ? "0" : "") + String(minute());// + ":";
+  //date += (second() < 10 ? "0" : "") + String(second());
+
+  lcd.setCursor(0, 0);
+  lcd.print(date);
+}
+
+void updateLCDWeather(int temp, int hum)
+{
+  String temperature = String(temp) + "'C";
+  lcd.setCursor(0, 1);
+  lcd.print(temperature);
+
+  String humidity = String(hum) + "%";
+  lcd.setCursor(6, 1);
+  lcd.print(humidity);
 }
