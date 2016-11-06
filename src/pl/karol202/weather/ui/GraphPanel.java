@@ -17,6 +17,7 @@ public class GraphPanel extends JPanel
 {
 	private final int MARGIN = 30;
 	private final int SECONDS_IN_DAY = 60 * 60 * 24;
+	private final int MAX_HIGHLIGHT_DISTANCE = 20;
 	
 	private DateFormat formatter;
 	private boolean showMeasurement;
@@ -36,6 +37,8 @@ public class GraphPanel extends JPanel
 	private int firstVisibleTime;
 	private int lastVisibleTime;
 	private HashMap<Integer, ForecastRecord> newestForecastRecords;
+	private ArrayList<Record> highlightedRecords;
+	private int mouseX;
 	
 	public GraphPanel()
 	{
@@ -49,11 +52,29 @@ public class GraphPanel extends JPanel
 		this.forecastCreationTimeFilterNewest = true;
 		
 		this.newestForecastRecords = new HashMap<>();
+		this.highlightedRecords = new ArrayList<>();
 		
-		this.addMouseMotionListener(new MouseAdapter() {
+		MouseAdapter adapter = new MouseAdapter() {
 			@Override
-			public void mouseMoved(MouseEvent e) { GraphPanel.this.onMouseMoved(e.getX()); }
-		});
+			public void mouseExited(MouseEvent e)
+			{
+				GraphPanel.this.onMouseExited();
+			}
+			
+			@Override
+			public void mouseMoved(MouseEvent e)
+			{
+				GraphPanel.this.onMouseMoved(e.getX());
+			}
+			
+			@Override
+			public void mouseDragged(MouseEvent e)
+			{
+				GraphPanel.this.onMouseMoved(e.getX());
+			}
+		};
+		this.addMouseListener(adapter);
+		this.addMouseMotionListener(adapter);
 	}
 	
 	@Override
@@ -65,6 +86,7 @@ public class GraphPanel extends JPanel
 		drawGrid(graphics);
 		drawTexts(graphics);
 		g.clipRect(MARGIN, MARGIN, getWidth() - (2 * MARGIN), getHeight() - (2 * MARGIN));
+		drawHighlight(graphics);
 		drawData(graphics);
 	}
 	
@@ -93,6 +115,16 @@ public class GraphPanel extends JPanel
 		String endTimeText = formatter.format(new Date((long) lastVisibleTime * 1000));
 		g.drawString(startTimeText, MARGIN - 13, getHeight() - MARGIN + 14);
 		g.drawString(endTimeText, getWidth() - MARGIN - 80, getHeight() - MARGIN + 14);
+	}
+	
+	private void drawHighlight(Graphics2D g)
+	{
+		if(highlightedRecords.size() == 0) return;
+		int highlightedTime = highlightedRecords.get(0).getTimeInSeconds();
+		int x = Math.round(map(firstVisibleTime, lastVisibleTime, MARGIN, getWidth() - MARGIN, highlightedTime));
+		if(Math.abs(x - mouseX) > MAX_HIGHLIGHT_DISTANCE) return;
+		g.setColor(Color.GRAY);
+		g.drawLine(x, MARGIN, x, getHeight() - MARGIN);
 	}
 	
 	private void drawData(Graphics2D g)
@@ -137,26 +169,59 @@ public class GraphPanel extends JPanel
 		return (value - srcMin) / (srcMax - srcMin) * (dstMax - dstMin) + dstMin;
 	}
 	
-	private void onMouseMoved(int x)
+	private void onMouseExited()
 	{
-		int time = (int) map(0, getWidth(), firstVisibleTime, lastVisibleTime, x);
-		
+		highlightedRecords.clear();
+		repaint();
 	}
 	
-	private ArrayList<Record> getClosestRecords(int time)
+	private void onMouseMoved(int x)
 	{
-		ArrayList<Record> records = new ArrayList<>();
-		//for(Record record : RecordsManager.getMeasureRecords())
-		return null;
+		mouseX = x;
+		int time = (int) map(MARGIN, getWidth() - MARGIN, firstVisibleTime, lastVisibleTime, x);
+		updateHighlightedRecords(time);
+		updateToolTip();
+	}
+	
+	private void updateHighlightedRecords(int mouseTime)
+	{
+		highlightedRecords.clear();
+		for(Record record : RecordsManager.getMeasureRecords()) checkRecord(mouseTime, record);
+		for(Record record : RecordsManager.getForecastRecords()) checkRecord(mouseTime, record);
+		repaint();
+	}
+	
+	private void checkRecord(int destination, Record current)
+	{
+		int comparision;
+		if(highlightedRecords.size() == 0) comparision = 1;
+		else comparision = compareRecords(destination, highlightedRecords.get(0), current);
+		
+		if(comparision == 1)
+		{
+			highlightedRecords.clear();
+			highlightedRecords.add(current);
+		}
+		else if(comparision == 0) highlightedRecords.add(current);
 	}
 	
 	private int compareRecords(int destination, Record closest, Record current)
 	{
 		int closestLength = Math.abs(closest.getTimeInSeconds() - destination);
 		int currentLength = Math.abs(current.getTimeInSeconds() - destination);
-		if(currentLength > closestLength) return 1;
-		else if(currentLength < closestLength) return -1;
+		if(currentLength < closestLength) return 1;
+		else if(currentLength > closestLength) return -1;
 		else return 0;
+	}
+	
+	private void updateToolTip()
+	{
+		String text = "<html>";
+		int size = highlightedRecords.size();
+		for(int i = 0; i < size; i++)
+			text += highlightedRecords.get(i) + (i != size - 1 ? "<br>" : "");
+		text += "</html>";
+		setToolTipText(text);
 	}
 	
 	public void updateValues()

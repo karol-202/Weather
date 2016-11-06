@@ -13,6 +13,12 @@ public class ForecastRecord extends Record
 	}
 	
 	@Override
+	protected String getName()
+	{
+		return "Prognoza";
+	}
+	
+	@Override
 	public boolean equals(Object o)
 	{
 		if(this == o) return true;

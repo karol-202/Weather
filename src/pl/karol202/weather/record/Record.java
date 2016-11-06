@@ -1,7 +1,12 @@
 package pl.karol202.weather.record;
 
+import java.text.DateFormat;
+import java.util.Date;
+
 public class Record
 {
+	private static DateFormat dateFormat;
+	
 	private int timeInSeconds;
 	private int temperature;
 	private int humidity;
@@ -11,6 +16,11 @@ public class Record
 		this.timeInSeconds = timeInSeconds;
 		this.temperature = temperature;
 		this.humidity = humidity;
+	}
+	
+	protected String getName()
+	{
+		return "Pomiar";
 	}
 	
 	@Override
@@ -33,6 +43,16 @@ public class Record
 		result = 31 * result + temperature;
 		result = 31 * result + humidity;
 		return result;
+	}
+	
+	@Override
+	public String toString()
+	{
+		if(dateFormat == null) dateFormat = DateFormat.getDateTimeInstance();
+		Date date = new Date(timeInSeconds * 1000L);
+		return getName() + " " + dateFormat.format(date) + "<br>" +
+			   "Temperatura: " + temperature + "°C" + "<br>" +
+			   "Wilgotność: " + humidity + "%" + "<br>";
 	}
 	
 	public int getTimeInSeconds()
