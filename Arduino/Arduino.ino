@@ -4,7 +4,9 @@
 #include <LiquidCrystal.h>
 
 #define PIN_DHT 8
-#define PIN_LED 13
+#define PIN_LED_RED 9
+#define PIN_LED_GREEN 10
+#define PIN_LED_BLUE 11
 
 #define MESSAGE_SET_TIME 1
 #define MESSAGE_SAVE_TIME 2
@@ -28,7 +30,10 @@ void setup()
 {
   Serial.begin(9600);
   dht.begin();
-  pinMode(PIN_LED, OUTPUT);
+  lcd.begin(16, 2);
+  pinMode(PIN_LED_RED, OUTPUT);
+  pinMode(PIN_LED_GREEN, OUTPUT);
+  pinMode(PIN_LED_BLUE, OUTPUT);
 
   int addrTime = EEPROM.length() - 7;
   time_t time;
@@ -37,7 +42,9 @@ void setup()
 
   measureDelay = 10; //Czekaj 10 sekund przed pierwszym zapisem
 
-  lcd.begin(16, 2);
+  digitalWrite(PIN_LED_RED, HIGH);
+  digitalWrite(PIN_LED_GREEN, HIGH);
+  digitalWrite(PIN_LED_BLUE, HIGH);
 }
 
 void loop()
@@ -71,16 +78,16 @@ void loop()
     delay(500); //Czekaj 0.5s przed kolejnym sprawdzeniem
   }
 
-  digitalWrite(PIN_LED, HIGH);
+  digitalWrite(PIN_LED_GREEN, LOW);
   collectData();
   delay(1000);
-  digitalWrite(PIN_LED, LOW);
+  digitalWrite(PIN_LED_GREEN, HIGH);
   measureDelay = MEASURE_DELAY - 1; //1 - czas zużyty na świecenie diody LED
 }
 
 void updateTime()
 {
-  digitalWrite(PIN_LED, HIGH);
+  digitalWrite(PIN_LED_RED, LOW);
   while(Serial.available() < 4) delay(10);
   int first = Serial.read();
   int second = Serial.read();
@@ -88,7 +95,7 @@ void updateTime()
   int fourth = Serial.read();
   time_t time = bytesToLong(first, second, third, fourth);
   setTime(time);
-  digitalWrite(PIN_LED, LOW);
+  digitalWrite(PIN_LED_RED, HIGH);
 }
 
 void sendData()
@@ -141,9 +148,9 @@ int getLength()
 
 void clearAll()
 {
-  digitalWrite(PIN_LED, HIGH);
+  digitalWrite(PIN_LED_BLUE, LOW);
   for(int i = 0; i < EEPROM.length(); i++) EEPROM.update(i, 255);
-  digitalWrite(PIN_LED, LOW);
+  digitalWrite(PIN_LED_BLUE, HIGH);
 }
 
 unsigned long bytesToLong(int first, int second, int third, int fourth)

@@ -291,7 +291,7 @@
                   </component>
                   <component id="5f818" class="javax.swing.JCheckBox" binding="checkBoxHumidity">
                     <constraints>
-                      <grid row="2" column="0" row-span="2" col-span="1" vsize-policy="0" hsize-policy="3" anchor="9" fill="0" indent="0" use-parent-layout="false"/>
+                      <grid row="2" column="0" row-span="1" col-span="1" vsize-policy="0" hsize-policy="3" anchor="9" fill="0" indent="0" use-parent-layout="false"/>
                       <gridbag weightx="0.0" weighty="0.0"/>
                     </constraints>
                     <properties>
@@ -401,6 +401,15 @@
                     <clientProperties>
                       <html.disable class="java.lang.Boolean" value="false"/>
                     </clientProperties>
+                  </component>
+                  <component id="d4625" class="javax.swing.JCheckBox" binding="checkBoxError">
+                    <constraints>
+                      <grid row="3" column="0" row-span="1" col-span="1" vsize-policy="0" hsize-policy="3" anchor="8" fill="0" indent="0" use-parent-layout="false"/>
+                      <gridbag top="0" left="0" bottom="0" right="10" weightx="0.0" weighty="0.0"/>
+                    </constraints>
+                    <properties>
+                      <text value="Błąd prognozy"/>
+                    </properties>
                   </component>
                 </children>
               </grid>

@@ -22,6 +22,7 @@ public class GraphPanel extends JPanel
 	private DateFormat formatter;
 	private boolean showMeasurement;
 	private boolean showForecast;
+	private boolean showForecastError;
 	private boolean showTemperature;
 	private boolean showHumidity;
 	private int daysVisible;
@@ -39,12 +40,14 @@ public class GraphPanel extends JPanel
 	private HashMap<Integer, ForecastRecord> newestForecastRecords;
 	private ArrayList<Record> highlightedRecords;
 	private int mouseX;
+	private ArrayList<Record> forecastErrorData;
 	
 	public GraphPanel()
 	{
 		this.formatter = DateFormat.getDateTimeInstance();
 		this.showMeasurement = true;
 		this.showForecast = true;
+		this.showForecastError = false;
 		this.showTemperature = true;
 		this.showHumidity = true;
 		this.daysVisible = 1;
@@ -53,6 +56,7 @@ public class GraphPanel extends JPanel
 		
 		this.newestForecastRecords = new HashMap<>();
 		this.highlightedRecords = new ArrayList<>();
+		this.forecastErrorData = new ArrayList<>();
 		
 		MouseAdapter adapter = new MouseAdapter() {
 			@Override
@@ -95,21 +99,44 @@ public class GraphPanel extends JPanel
 		g.setColor(Color.BLACK);
 		g.drawLine(MARGIN, MARGIN, MARGIN, getHeight() - MARGIN); //Left side
 		g.drawLine(getWidth() - MARGIN, MARGIN, getWidth() - MARGIN, getHeight() - MARGIN); //Right side
-		g.drawLine(MARGIN, getHeight() - MARGIN, getWidth() - MARGIN, getHeight() - MARGIN); //Bottom side
+		if(!showForecastError) g.drawLine(MARGIN, getHeight() - MARGIN, getWidth() - MARGIN, getHeight() - MARGIN); //Bottom side
+		else g.drawLine(MARGIN, getHeight() / 2, getWidth() - MARGIN, getHeight() / 2); //Center line
 	}
 	
 	private void drawTexts(Graphics2D g)
+	{
+		drawTextsTemperature(g);
+		drawTextsHumidity(g);
+		drawTextsTime(g);
+	}
+	
+	private void drawTextsTemperature(Graphics2D g)
 	{
 		g.setColor(Color.RED);
 		String startTemperatureText = Integer.toString(lowestTemperature) + "°C";
 		String endTemperatureText = Integer.toString(highestTemperature) + "°C";
 		g.drawString(startTemperatureText, MARGIN - (startTemperatureText.length() * 6), getHeight() - MARGIN + 2);
 		g.drawString(endTemperatureText, MARGIN - (endTemperatureText.length() * 6), MARGIN + 2);
-		
+	}
+	
+	private void drawTextsHumidity(Graphics2D g)
+	{
 		g.setColor(Color.BLUE);
-		g.drawString("0%", getWidth() - MARGIN + 2, getHeight() - MARGIN + 2);
-		g.drawString("100%", getWidth() - MARGIN + 2, MARGIN + 2);
-		
+		if(showForecastError)
+		{
+			g.drawString("-100%", getWidth() - MARGIN, getHeight() - MARGIN + 2);
+			g.drawString("0%", getWidth() - MARGIN + 2, (getHeight() / 2) + 2);
+			g.drawString("100%", getWidth() - MARGIN + 2, MARGIN + 2);
+		}
+		else
+		{
+			g.drawString("0%", getWidth() - MARGIN + 2, getHeight() - MARGIN + 2);
+			g.drawString("100%", getWidth() - MARGIN + 2, MARGIN + 2);
+		}
+	}
+	
+	private void drawTextsTime(Graphics2D g)
+	{
 		g.setColor(Color.BLACK);
 		String startTimeText = formatter.format(new Date((long) firstVisibleTime * 1000));
 		String endTimeText = formatter.format(new Date((long) lastVisibleTime * 1000));
@@ -128,6 +155,17 @@ public class GraphPanel extends JPanel
 	}
 	
 	private void drawData(Graphics2D g)
+	{
+		if(showForecastError) drawDataError(g);
+		else drawDataStandard(g);
+	}
+	
+	private void drawDataError(Graphics2D g)
+	{
+		drawRecords(g, forecastErrorData, Color.RED, Color.BLUE);
+	}
+	
+	private void drawDataStandard(Graphics2D g)
 	{
 		if(showMeasurement && RecordsManager.getMeasureRecords() != null)
 			drawRecords(g, RecordsManager.getMeasureRecords(), Color.RED, Color.BLUE);
@@ -186,13 +224,17 @@ public class GraphPanel extends JPanel
 	private void updateHighlightedRecords(int mouseTime)
 	{
 		highlightedRecords.clear();
-		for(Record record : RecordsManager.getMeasureRecords()) checkRecord(mouseTime, record);
-		for(Record record : RecordsManager.getForecastRecords()) checkRecord(mouseTime, record);
+		if(showMeasurement)
+			for(Record record : RecordsManager.getMeasureRecords()) checkRecord(mouseTime, record);
+		if(showForecast)
+			for(Record record : RecordsManager.getForecastRecords()) checkRecord(mouseTime, record);
 		repaint();
 	}
 	
 	private void checkRecord(int destination, Record current)
 	{
+		if(!isRecordProper(current)) return;
+		
 		int comparision;
 		if(highlightedRecords.size() == 0) comparision = 1;
 		else comparision = compareRecords(destination, highlightedRecords.get(0), current);
@@ -232,12 +274,13 @@ public class GraphPanel extends JPanel
 		highestTemperature = getHighestTemperature();
 		firstVisibleTime = calcFirstVisibleTime();
 		lastVisibleTime = calcLastVisbleTime();
-		updateNewestRecordsMap();
+		updateNewestRecords();
+		updateForecastErrorData();
 		
 		repaint();
 	}
 	
-	private void updateNewestRecordsMap()
+	private void updateNewestRecords()
 	{
 		newestForecastRecords.clear();
 		for(ForecastRecord record : RecordsManager.getForecastRecords())
@@ -247,6 +290,17 @@ public class GraphPanel extends JPanel
 				if(record.getCreationTimeInSeconds() >= newestForecastRecords.get(time).getCreationTimeInSeconds()) continue;
 			newestForecastRecords.put(time, record);
 		}
+	}
+	
+	private void updateForecastErrorData()
+	{
+		forecastErrorData.clear();
+		
+		ArrayList<Record> allRecords = new ArrayList<>();
+		RecordsManager.getMeasureRecords().forEach(allRecords::add);
+		RecordsManager.getForecastRecords().stream().filter(this::isRecordProper).forEach(allRecords::add);
+		
+		//TODO Usunąć to dziadostwo.
 	}
 	
 	private int getFirstRecordTime()
@@ -405,6 +459,11 @@ public class GraphPanel extends JPanel
 	public void setShowForecast(boolean showForecast)
 	{
 		this.showForecast = showForecast;
+	}
+	
+	public void setShowForecastError(boolean showForecastError)
+	{
+		this.showForecastError = showForecastError;
 	}
 	
 	public void setShowTemperature(boolean showTemperature)

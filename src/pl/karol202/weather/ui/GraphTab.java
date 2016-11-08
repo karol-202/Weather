@@ -18,6 +18,7 @@ public class GraphTab
 	private JSpinner spinnerScale;
 	private JCheckBox checkBoxMeasure;
 	private JCheckBox checkBoxForecast;
+	private JCheckBox checkBoxError;
 	private JCheckBox checkBoxTemperature;
 	private JCheckBox checkBoxHumidity;
 	private JComboBox<String> comboBoxSource;
@@ -36,7 +37,7 @@ public class GraphTab
 		checkBoxForecast.addActionListener(e -> toggleForecast(checkBoxForecast.isSelected()));
 		checkBoxTemperature.addActionListener(e -> updateGraph());
 		checkBoxHumidity.addActionListener(e -> updateGraph());
-		
+		checkBoxError.addActionListener(e -> { toggleForecastError(checkBoxError.isSelected()); });
 		spinnerScale.setModel(spinnerModelNumber);
 		spinnerScale.addChangeListener(e -> updateGraph());
 		
@@ -63,6 +64,7 @@ public class GraphTab
 	{
 		graph.setShowMeasurement(checkBoxMeasure.isSelected());
 		graph.setShowForecast(checkBoxForecast.isSelected());
+		graph.setShowForecastError(checkBoxError.isSelected());
 		graph.setShowTemperature(checkBoxTemperature.isSelected());
 		graph.setShowHumidity(checkBoxHumidity.isSelected());
 		graph.setDaysVisible((int) spinnerScale.getValue());
@@ -104,12 +106,24 @@ public class GraphTab
 		radioFilterNewest.setEnabled(enabled);
 		
 		updateForecastCreationFilter();
-		updateGraph();
 	}
 	
 	private void updateForecastCreationFilter()
 	{
 		ftfForecastCreationTime.setEnabled(radioFilterManual.isSelected());
+		
+		updateGraph();
+	}
+	
+	private void toggleForecastError(boolean show)
+	{
+		if(show)
+		{
+			checkBoxMeasure.setSelected(true);
+			checkBoxForecast.setSelected(true);
+		}
+		checkBoxMeasure.setEnabled(!show);
+		checkBoxForecast.setEnabled(!show);
 		
 		updateGraph();
 	}
@@ -137,6 +151,11 @@ public class GraphTab
 	public void setCheckBoxForecast(JCheckBox checkBoxForecast)
 	{
 		this.checkBoxForecast = checkBoxForecast;
+	}
+	
+	public void setCheckBoxError(JCheckBox checkBoxError)
+	{
+		this.checkBoxError = checkBoxError;
 	}
 	
 	public void setCheckBoxTemperature(JCheckBox checkBoxTemperature)

@@ -40,6 +40,7 @@ public class FormMain extends JFrame
 	private JFormattedTextField ftfForecastCreationTime;
 	private JRadioButton radioFilterManual;
 	private JRadioButton radioFilterNewest;
+	private JCheckBox checkBoxError;
 	
 	public FormMain()
 	{
@@ -97,6 +98,7 @@ public class FormMain extends JFrame
 		graphTab.setSpinnerScale(spinnerScale);
 		graphTab.setCheckBoxMeasure(checkBoxMeasure);
 		graphTab.setCheckBoxForecast(checkBoxForecast);
+		graphTab.setCheckBoxError(checkBoxError);
 		graphTab.setCheckBoxTemperature(checkBoxTemperature);
 		graphTab.setCheckBoxHumidity(checkBoxHumidity);
 		graphTab.setComboBoxSource(comboBoxSourceGraph);
