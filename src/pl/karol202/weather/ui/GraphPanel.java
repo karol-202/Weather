@@ -1,5 +1,6 @@
 package pl.karol202.weather.ui;
 
+import pl.karol202.weather.record.ForecastErrorRecord;
 import pl.karol202.weather.record.ForecastRecord;
 import pl.karol202.weather.record.Record;
 import pl.karol202.weather.record.RecordsManager;
@@ -9,9 +10,7 @@ import java.awt.*;
 import java.awt.event.MouseAdapter;
 import java.awt.event.MouseEvent;
 import java.text.DateFormat;
-import java.util.ArrayList;
-import java.util.Date;
-import java.util.HashMap;
+import java.util.*;
 
 public class GraphPanel extends JPanel
 {
@@ -35,6 +34,8 @@ public class GraphPanel extends JPanel
 	private int lastRecordTime;
 	private int lowestTemperature;
 	private int highestTemperature;
+	private int lowestHumidity;
+	private int highestHumidity;
 	private int firstVisibleTime;
 	private int lastVisibleTime;
 	private HashMap<Integer, ForecastRecord> newestForecastRecords;
@@ -117,6 +118,7 @@ public class GraphPanel extends JPanel
 		String endTemperatureText = Integer.toString(highestTemperature) + "°C";
 		g.drawString(startTemperatureText, MARGIN - (startTemperatureText.length() * 6), getHeight() - MARGIN + 2);
 		g.drawString(endTemperatureText, MARGIN - (endTemperatureText.length() * 6), MARGIN + 2);
+		if(showForecastError) g.drawString("0°C", MARGIN - 18, (getHeight() / 2) + 2);
 	}
 	
 	private void drawTextsHumidity(Graphics2D g)
@@ -192,8 +194,8 @@ public class GraphPanel extends JPanel
 				}
 				if(showHumidity)
 				{
-					int y = (int) map(0, 100, getHeight() - MARGIN, MARGIN, record.getHumidity());
-					int lastY = (int) map(0, 100, getHeight() - MARGIN, MARGIN, lastRecord.getHumidity());
+					int y = (int) map(lowestHumidity, highestHumidity, getHeight() - MARGIN, MARGIN, record.getHumidity());
+					int lastY = (int) map(lowestHumidity, highestHumidity, getHeight() - MARGIN, MARGIN, lastRecord.getHumidity());
 					g.setColor(colorHumidity);
 					g.drawLine(lastX, lastY, x, y);
 				}
@@ -224,10 +226,13 @@ public class GraphPanel extends JPanel
 	private void updateHighlightedRecords(int mouseTime)
 	{
 		highlightedRecords.clear();
-		if(showMeasurement)
-			for(Record record : RecordsManager.getMeasureRecords()) checkRecord(mouseTime, record);
-		if(showForecast)
-			for(Record record : RecordsManager.getForecastRecords()) checkRecord(mouseTime, record);
+		if(showForecastError)
+			for(Record record : forecastErrorData) checkRecord(mouseTime, record);
+		else
+		{
+			if(showMeasurement) for(Record record : RecordsManager.getMeasureRecords()) checkRecord(mouseTime, record);
+			if(showForecast) for(Record record : RecordsManager.getForecastRecords()) checkRecord(mouseTime, record);
+		}
 		repaint();
 	}
 	
@@ -270,14 +275,36 @@ public class GraphPanel extends JPanel
 	{
 		firstRecordTime = getFirstRecordTime();
 		lastRecordTime = getLastRecordTime();
-		lowestTemperature = getLowestTemperature();
-		highestTemperature = getHighestTemperature();
+		updateLowestAndHighestTemperature();
+		lowestHumidity = showForecastError ? -100 : 0;
+		highestHumidity = 100;
 		firstVisibleTime = calcFirstVisibleTime();
 		lastVisibleTime = calcLastVisbleTime();
-		updateNewestRecords();
-		updateForecastErrorData();
 		
 		repaint();
+	}
+	
+	private void updateLowestAndHighestTemperature()
+	{
+		if(showForecastError)
+		{
+			lowestTemperature = getLowestTemperatureFromForecastErrors();
+			highestTemperature = getHighestTemperatureFromForecastErrors();
+			int maxAbs = Math.max(Math.abs(lowestTemperature), Math.abs(highestTemperature));
+			lowestTemperature = maxAbs * -1;
+			highestTemperature = maxAbs;
+		}
+		else
+		{
+			lowestTemperature = getLowestTemperature();
+			highestTemperature = getHighestTemperature();
+		}
+	}
+	
+	public void updateData()
+	{
+		updateNewestRecords();
+		if(showForecastError) updateForecastErrorData();
 	}
 	
 	private void updateNewestRecords()
@@ -296,11 +323,56 @@ public class GraphPanel extends JPanel
 	{
 		forecastErrorData.clear();
 		
-		ArrayList<Record> allRecords = new ArrayList<>();
-		RecordsManager.getMeasureRecords().forEach(allRecords::add);
-		RecordsManager.getForecastRecords().stream().filter(this::isRecordProper).forEach(allRecords::add);
+		createNewForecastErrorRecords(RecordsManager.getMeasureRecords(), RecordsManager.getForecastRecords(), false);
+		createNewForecastErrorRecords(RecordsManager.getForecastRecords(), RecordsManager.getMeasureRecords(), true);
 		
-		//TODO Usunąć to dziadostwo.
+		Collections.sort(forecastErrorData);
+	}
+	
+	private void createNewForecastErrorRecords(ArrayList<? extends Record> firstList, ArrayList<? extends Record> secondList, boolean invert)
+	{
+		for(Record record : firstList)
+		{
+			if(!isRecordProper(record)) continue;
+			Record corresponding = getCorrespondingRecordFromList(record, secondList);
+			if(corresponding == null) continue;
+			int temperatureDiff = corresponding.getTemperature() - record.getTemperature();
+			int humidityDiff = corresponding.getHumidity() - record.getHumidity();
+			if(invert) temperatureDiff = 0 - temperatureDiff;
+			if(invert) humidityDiff = 0 - humidityDiff;
+			Record error = new ForecastErrorRecord(record.getTimeInSeconds(), temperatureDiff, humidityDiff);
+			forecastErrorData.add(error);
+		}
+	}
+	
+	private Record getCorrespondingRecordFromList(Record record, ArrayList<? extends Record> list)
+	{
+		Record recordWithSameTime = findRecordWithSameTime(record, list);
+		if(recordWithSameTime != null) return recordWithSameTime;
+		
+		Record earlier = null;
+		Record later = null;
+		for(Record next : list)
+		{
+			if(isRecordEarlierAndProper(next, record) && isRecordLater(next, earlier)) earlier = next;
+			if(isRecordLaterAndProper(next, record) && isRecordEarlier(next, later)) later = next;
+		}
+		if(earlier == null || later == null) return null;
+		float newTemperature = map(earlier.getTimeInSeconds(), later.getTimeInSeconds(),
+								   earlier.getTemperature(), later.getTemperature(),
+								   record.getTimeInSeconds());
+		float newHumidity = map(earlier.getTimeInSeconds(), later.getTimeInSeconds(),
+								earlier.getHumidity(), later.getHumidity(),
+								record.getTimeInSeconds());
+		return new Record(record.getTimeInSeconds(), Math.round(newTemperature), Math.round(newHumidity));
+	}
+	
+	private Record findRecordWithSameTime(Record record, ArrayList<? extends Record> list)
+	{
+		for(Record next : list)
+			if(isRecordProper(next) && next.getTimeInSeconds() == record.getTimeInSeconds())
+				return next;
+		return null;
 	}
 	
 	private int getFirstRecordTime()
@@ -394,6 +466,12 @@ public class GraphPanel extends JPanel
 		return current != null && (lowest == null || current.getTemperature() < lowest.getTemperature());
 	}
 	
+	private int getLowestTemperatureFromForecastErrors()
+	{
+		Record lowest = getRecordWithLowestTemperaure(forecastErrorData);
+		return lowest != null ? lowest.getTemperature() : 0;
+	}
+	
 	private int getHighestTemperature()
 	{
 		Record highest = null;
@@ -421,6 +499,12 @@ public class GraphPanel extends JPanel
 		return current != null && (highest == null || current.getTemperature() > highest.getTemperature());
 	}
 	
+	private int getHighestTemperatureFromForecastErrors()
+	{
+		Record highest = getRecordWithHighestTemperature(forecastErrorData);
+		return highest != null ? highest.getTemperature() : 0;
+	}
+	
 	private boolean isRecordProper(Record record)
 	{
 		if(record == null) return false;
@@ -430,7 +514,7 @@ public class GraphPanel extends JPanel
 		if(forecastCreationTimeFilterNewest)
 		{
 			if(!newestForecastRecords.containsValue(fr)) return false;
-		}
+		} //Te nawiasy klamrowe są bardzo potrzebne.
 		else
 			if(fr.getCreationTimeInSeconds() != forecastCreationTimeFilter) return false;
 		return true;

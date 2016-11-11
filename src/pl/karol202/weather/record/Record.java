@@ -3,7 +3,7 @@ package pl.karol202.weather.record;
 import java.text.DateFormat;
 import java.util.Date;
 
-public class Record
+public class Record implements Comparable<Record>
 {
 	private static DateFormat dateFormat;
 	
@@ -16,11 +16,6 @@ public class Record
 		this.timeInSeconds = timeInSeconds;
 		this.temperature = temperature;
 		this.humidity = humidity;
-	}
-	
-	protected String getName()
-	{
-		return "Pomiar";
 	}
 	
 	@Override
@@ -51,8 +46,31 @@ public class Record
 		if(dateFormat == null) dateFormat = DateFormat.getDateTimeInstance();
 		Date date = new Date(timeInSeconds * 1000L);
 		return getName() + " " + dateFormat.format(date) + "<br>" +
-			   "Temperatura: " + temperature + "°C" + "<br>" +
-			   "Wilgotność: " + humidity + "%" + "<br>";
+			   getTemperatureString() + ": " + temperature + "°C" + "<br>" +
+			   getHumidityString() + ": " + humidity + "%" + "<br>";
+	}
+	
+	@Override
+	public int compareTo(Record o)
+	{
+		if(timeInSeconds < o.getTimeInSeconds()) return -1;
+		else if(timeInSeconds > o.getTimeInSeconds()) return 1;
+		else return 0;
+	}
+	
+	protected String getName()
+	{
+		return "Pomiar";
+	}
+	
+	protected String getTemperatureString()
+	{
+		return "Temperatura";
+	}
+	
+	protected String getHumidityString()
+	{
+		return "Wilgotność";
 	}
 	
 	public int getTimeInSeconds()

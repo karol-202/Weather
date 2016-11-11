@@ -13,12 +13,6 @@ public class ForecastRecord extends Record
 	}
 	
 	@Override
-	protected String getName()
-	{
-		return "Prognoza";
-	}
-	
-	@Override
 	public boolean equals(Object o)
 	{
 		if(this == o) return true;
@@ -39,6 +33,12 @@ public class ForecastRecord extends Record
 		result = 31 * result + creationTimeInSeconds;
 		result = 31 * result + forecastSource;
 		return result;
+	}
+	
+	@Override
+	protected String getName()
+	{
+		return "Prognoza";
 	}
 	
 	public int getCreationTimeInSeconds()

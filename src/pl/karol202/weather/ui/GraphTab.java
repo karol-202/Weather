@@ -31,26 +31,26 @@ public class GraphTab
 		spinnerModelNumber = new SpinnerNumberModel(5, 1, 100, 1);
 		dateFormatter = new DateFormatter(DateFormat.getDateTimeInstance());
 		
-		scrollBarOffset.addAdjustmentListener(e -> updateGraph());
+		scrollBarOffset.addAdjustmentListener(e -> updateGraph(false));
 		
-		checkBoxMeasure.addActionListener(e -> updateGraph());
+		checkBoxMeasure.addActionListener(e -> updateGraph(true));
 		checkBoxForecast.addActionListener(e -> toggleForecast(checkBoxForecast.isSelected()));
-		checkBoxTemperature.addActionListener(e -> updateGraph());
-		checkBoxHumidity.addActionListener(e -> updateGraph());
-		checkBoxError.addActionListener(e -> { toggleForecastError(checkBoxError.isSelected()); });
+		checkBoxTemperature.addActionListener(e -> updateGraph(false));
+		checkBoxHumidity.addActionListener(e -> updateGraph(false));
+		checkBoxError.addActionListener(e -> toggleForecastError(checkBoxError.isSelected()));
 		spinnerScale.setModel(spinnerModelNumber);
-		spinnerScale.addChangeListener(e -> updateGraph());
+		spinnerScale.addChangeListener(e -> updateGraph(false));
 		
 		updateSources();
-		comboBoxSource.addItemListener(e -> updateGraph());
+		comboBoxSource.addItemListener(e -> updateGraph(true));
 		
 		ftfForecastCreationTime.setFormatterFactory(new DefaultFormatterFactory(dateFormatter));
-		ftfForecastCreationTime.addActionListener(e -> updateGraph());
+		ftfForecastCreationTime.addActionListener(e -> updateGraph(true));
 		
 		radioFilterManual.addActionListener(e -> updateForecastCreationFilter());
 		radioFilterNewest.addActionListener(e -> updateForecastCreationFilter());
 		
-		updateGraph();
+		updateGraph(true);
 	}
 
 	public void updateSources()
@@ -62,6 +62,11 @@ public class GraphTab
 	
 	public void updateGraph()
 	{
+		updateGraph(true);
+	}
+	
+	private void updateGraph(boolean updateData)
+	{
 		graph.setShowMeasurement(checkBoxMeasure.isSelected());
 		graph.setShowForecast(checkBoxForecast.isSelected());
 		graph.setShowForecastError(checkBoxError.isSelected());
@@ -72,6 +77,7 @@ public class GraphTab
 		graph.setCurrentSourceFilter(comboBoxSource.getSelectedIndex());
 		graph.setForecastCreationTimeFilter(getForecastCreationTimeFilter());
 		graph.setForecastCreationTimeFilterNewest(radioFilterNewest.isSelected());
+		if(updateData) graph.updateData();
 		graph.updateValues();
 		
 		updateScrollBar();
@@ -112,7 +118,7 @@ public class GraphTab
 	{
 		ftfForecastCreationTime.setEnabled(radioFilterManual.isSelected());
 		
-		updateGraph();
+		updateGraph(true);
 	}
 	
 	private void toggleForecastError(boolean show)
@@ -125,7 +131,7 @@ public class GraphTab
 		checkBoxMeasure.setEnabled(!show);
 		checkBoxForecast.setEnabled(!show);
 		
-		updateGraph();
+		updateGraph(true);
 	}
 	
 	public void setGraph(GraphPanel graph)
