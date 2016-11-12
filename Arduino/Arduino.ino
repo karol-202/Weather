@@ -3,10 +3,18 @@
 #include <Time.h>
 #include <LiquidCrystal.h>
 
-#define PIN_DHT 8
-#define PIN_LED_RED 9
-#define PIN_LED_GREEN 10
-#define PIN_LED_BLUE 11
+#define PIN_BUTTON_LIGHT 2
+#define PIN_LCD_RS 3
+#define PIN_LCD_E 4
+#define PIN_LCD_D0 5
+#define PIN_LCD_D1 6
+#define PIN_LCD_D2 7
+#define PIN_LCD_D3 8
+#define PIN_DHT 9
+#define PIN_LED_RED 10
+#define PIN_LED_GREEN 11
+#define PIN_LED_BLUE 12
+#define PIN_LIGHT 13
 
 #define MESSAGE_SET_TIME 1
 #define MESSAGE_SAVE_TIME 2
@@ -23,8 +31,9 @@ struct Record
 };
 
 DHT dht(PIN_DHT, DHT11);
-LiquidCrystal lcd(2, 3, 4, 5, 6, 7);
+LiquidCrystal lcd(PIN_LCD_RS, PIN_LCD_E, PIN_LCD_D0, PIN_LCD_D1, PIN_LCD_D2, PIN_LCD_D3);
 int measureDelay;
+bool lightEnabled;
 
 void setup()
 {
@@ -34,6 +43,8 @@ void setup()
   pinMode(PIN_LED_RED, OUTPUT);
   pinMode(PIN_LED_GREEN, OUTPUT);
   pinMode(PIN_LED_BLUE, OUTPUT);
+  pinMode(PIN_BUTTON_LIGHT, INPUT_PULLUP);
+  pinMode(PIN_LIGHT, OUTPUT);
 
   int addrTime = EEPROM.length() - 7;
   time_t time;
@@ -41,10 +52,14 @@ void setup()
   setTime(time);
 
   measureDelay = 10; //Czekaj 10 sekund przed pierwszym zapisem
+  lightEnabled = true;
 
   digitalWrite(PIN_LED_RED, HIGH);
   digitalWrite(PIN_LED_GREEN, HIGH);
   digitalWrite(PIN_LED_BLUE, HIGH);
+  digitalWrite(PIN_LIGHT, HIGH);
+
+  attachInterrupt(digitalPinToInterrupt(PIN_BUTTON_LIGHT), toggleLight, FALLING);
 }
 
 void loop()
@@ -201,4 +216,10 @@ void updateLCDWeather(int temp, int hum)
   String humidity = String(hum) + "%";
   lcd.setCursor(6, 1);
   lcd.print(humidity);
+}
+
+void toggleLight()
+{
+  lightEnabled = !lightEnabled;
+  digitalWrite(PIN_LIGHT, lightEnabled ? LOW : HIGH);
 }

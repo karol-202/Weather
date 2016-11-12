@@ -127,6 +127,7 @@ public class GraphTab
 		{
 			checkBoxMeasure.setSelected(true);
 			checkBoxForecast.setSelected(true);
+			toggleForecast(true);
 		}
 		checkBoxMeasure.setEnabled(!show);
 		checkBoxForecast.setEnabled(!show);
