@@ -30,12 +30,12 @@ public class MeasurementTab implements Connector.ConnectionListener
 	private JComboBox<String> comboBoxPort;
 	private JProgressBar progressBarMemory;
 	
-	public MeasurementTab(FormMain parent)
+	MeasurementTab(FormMain parent)
 	{
 		this.parent = parent;
 	}
 	
-	public void init()
+	void init()
 	{
 		measureTableModel = new MeasureRecordsTableModel();
 		initPorts();
@@ -185,47 +185,47 @@ public class MeasurementTab implements Connector.ConnectionListener
 		progressBarMemory.setValue(newRecords.size() * Connector.MEMORY_RECORD_SIZE);
 	}
 	
-	public void setTableMeasurement(JTable tableMeasurement)
+	void setTableMeasurement(JTable tableMeasurement)
 	{
 		this.tableMeasurement = tableMeasurement;
 	}
 	
-	public void setButtonSetTime(JButton buttonSetTime)
+	void setButtonSetTime(JButton buttonSetTime)
 	{
 		this.buttonSetTime = buttonSetTime;
 	}
 	
-	public void setButtonSaveTime(JButton buttonSaveTime)
+	void setButtonSaveTime(JButton buttonSaveTime)
 	{
 		this.buttonSaveTime = buttonSaveTime;
 	}
 	
-	public void setButtonGetData(JButton buttonGetData)
+	void setButtonGetData(JButton buttonGetData)
 	{
 		this.buttonGetData = buttonGetData;
 	}
 	
-	public void setButtonReset(JButton buttonReset)
+	void setButtonReset(JButton buttonReset)
 	{
 		this.buttonReset = buttonReset;
 	}
 	
-	public void setButtonConnect(JButton buttonConnect)
+	void setButtonConnect(JButton buttonConnect)
 	{
 		this.buttonConnect = buttonConnect;
 	}
 	
-	public void setButtonRefresh(JButton buttonRefresh)
+	void setButtonRefresh(JButton buttonRefresh)
 	{
 		this.buttonRefresh = buttonRefresh;
 	}
 	
-	public void setComboBoxPort(JComboBox<String> comboBoxPort)
+	void setComboBoxPort(JComboBox<String> comboBoxPort)
 	{
 		this.comboBoxPort = comboBoxPort;
 	}
 	
-	public void setProgressBarMemory(JProgressBar progressBarMemory)
+	void setProgressBarMemory(JProgressBar progressBarMemory)
 	{
 		this.progressBarMemory = progressBarMemory;
 	}

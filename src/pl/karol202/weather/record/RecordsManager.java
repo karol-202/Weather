@@ -12,6 +12,7 @@ public class RecordsManager
 	private static ArrayList<String> forecastSources;
 	private static File file;
 	
+	@SuppressWarnings("ResultOfMethodCallIgnored")
 	public static void init()
 	{
 		measureRecords = new ArrayList<>();
@@ -159,14 +160,5 @@ public class RecordsManager
 	public static ArrayList<String> getForecastSources()
 	{
 		return forecastSources;
-	}
-	
-	public static int getForecastSourceId(String source)
-	{
-		for(int i = 0; i < forecastSources.size(); i++)
-		{
-			if(source.equals(forecastSources.get(i))) return i;
-		}
-		return -1;
 	}
 }

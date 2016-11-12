@@ -33,12 +33,12 @@ public class ForecastTab
 	private JButton buttonEditSource;
 	private JButton buttonDeleteSource;
 	
-	public ForecastTab(FormMain parent)
+	ForecastTab(FormMain parent)
 	{
 		this.parent = parent;
 	}
 	
-	public void init()
+	void init()
 	{
 		forecastTableModel = new ForecastRecordsTableModel();
 		forecastTableModel.addListener(() -> parent.updateGraph());
@@ -265,32 +265,32 @@ public class ForecastTab
 			throw new RuntimeException("Cannot delete this filter.");
 	}
 	
-	public void setTableForecast(JTable tableForecast)
+	void setTableForecast(JTable tableForecast)
 	{
 		this.tableForecast = tableForecast;
 	}
 	
-	public void setButtonAddRecord(JButton buttonAddRecord)
+	void setButtonAddRecord(JButton buttonAddRecord)
 	{
 		this.buttonAddRecord = buttonAddRecord;
 	}
 	
-	public void setComboBoxSources(JComboBox<String> comboBoxSources)
+	void setComboBoxSources(JComboBox<String> comboBoxSources)
 	{
 		this.comboBoxSources = comboBoxSources;
 	}
 	
-	public void setButtonAddSource(JButton buttonAddSource)
+	void setButtonAddSource(JButton buttonAddSource)
 	{
 		this.buttonAddSource = buttonAddSource;
 	}
 	
-	public void setButtonEditSource(JButton buttonEditSource)
+	void setButtonEditSource(JButton buttonEditSource)
 	{
 		this.buttonEditSource = buttonEditSource;
 	}
 	
-	public void setButtonDeleteSource(JButton buttonDeleteSource)
+	void setButtonDeleteSource(JButton buttonDeleteSource)
 	{
 		this.buttonDeleteSource = buttonDeleteSource;
 	}

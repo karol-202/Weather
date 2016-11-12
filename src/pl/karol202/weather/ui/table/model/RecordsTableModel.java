@@ -8,7 +8,7 @@ public abstract class RecordsTableModel<R> extends AbstractTableModel
 	private String[] header;
 	private ArrayList<R> data;
 	
-	public RecordsTableModel(String[] header, ArrayList<R> data)
+	RecordsTableModel(String[] header, ArrayList<R> data)
 	{
 		this.header = header;
 		this.data = data;
@@ -38,7 +38,7 @@ public abstract class RecordsTableModel<R> extends AbstractTableModel
 		return getValueAt(0, columnIndex).getClass();
 	}
 	
-	protected ArrayList<R> getData()
+	ArrayList<R> getData()
 	{
 		return data;
 	}

@@ -10,7 +10,7 @@ public abstract class AdvancedCellRenderer extends JTextPane implements TableCel
 {
 	private Color unselectedBackground;
 	
-	public AdvancedCellRenderer()
+	AdvancedCellRenderer()
 	{
 		unselectedBackground = getBackground();
 		
@@ -28,7 +28,7 @@ public abstract class AdvancedCellRenderer extends JTextPane implements TableCel
 		return this;
 	}
 	
-	protected void appendColoredText(String text, Color color)
+	void appendColoredText(String text, Color color)
 	{
 		SimpleAttributeSet set = new SimpleAttributeSet();
 		StyleConstants.setForeground(set, color);

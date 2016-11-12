@@ -271,7 +271,7 @@ public class GraphPanel extends JPanel
 		setToolTipText(text);
 	}
 	
-	public void updateValues()
+	void updateValues()
 	{
 		firstRecordTime = getFirstRecordTime();
 		lastRecordTime = getLastRecordTime();
@@ -301,7 +301,7 @@ public class GraphPanel extends JPanel
 		}
 	}
 	
-	public void updateData()
+	void updateData()
 	{
 		updateNewestRecords();
 		if(showForecastError) updateForecastErrorData();
@@ -530,57 +530,57 @@ public class GraphPanel extends JPanel
 		return firstVisibleTime + (SECONDS_IN_DAY * daysVisible);
 	}
 	
-	public int getTimeScaleRatio()
+	int getTimeScaleRatio()
 	{
 		return Math.round((float) daysVisible / ((lastRecordTime - firstRecordTime) / SECONDS_IN_DAY) * 100);
 	}
 	
-	public void setShowMeasurement(boolean showMeasurement)
+	void setShowMeasurement(boolean showMeasurement)
 	{
 		this.showMeasurement = showMeasurement;
 	}
 	
-	public void setShowForecast(boolean showForecast)
+	void setShowForecast(boolean showForecast)
 	{
 		this.showForecast = showForecast;
 	}
 	
-	public void setShowForecastError(boolean showForecastError)
+	void setShowForecastError(boolean showForecastError)
 	{
 		this.showForecastError = showForecastError;
 	}
 	
-	public void setShowTemperature(boolean showTemperature)
+	void setShowTemperature(boolean showTemperature)
 	{
 		this.showTemperature = showTemperature;
 	}
 	
-	public void setShowHumidity(boolean showHumidity)
+	void setShowHumidity(boolean showHumidity)
 	{
 		this.showHumidity = showHumidity;
 	}
 	
-	public void setDaysVisible(int daysVisible)
+	void setDaysVisible(int daysVisible)
 	{
 		this.daysVisible = daysVisible;
 	}
 	
-	public void setOffsetPercent(int offsetPercent)
+	void setOffsetPercent(int offsetPercent)
 	{
 		this.offsetPercent = offsetPercent;
 	}
 	
-	public void setCurrentSourceFilter(int currentSourceFilter)
+	void setCurrentSourceFilter(int currentSourceFilter)
 	{
 		this.currentSourceFilter = currentSourceFilter;
 	}
 	
-	public void setForecastCreationTimeFilter(int time)
+	void setForecastCreationTimeFilter(int time)
 	{
 		this.forecastCreationTimeFilter = time;
 	}
 	
-	public void setForecastCreationTimeFilterNewest(boolean newest)
+	void setForecastCreationTimeFilterNewest(boolean newest)
 	{
 		this.forecastCreationTimeFilterNewest = newest;
 	}

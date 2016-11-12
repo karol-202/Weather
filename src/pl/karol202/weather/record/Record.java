@@ -26,9 +26,7 @@ public class Record implements Comparable<Record>
 		
 		Record record = (Record) o;
 		
-		if(timeInSeconds != record.timeInSeconds) return false;
-		if(temperature != record.temperature) return false;
-		return humidity == record.humidity;
+		return timeInSeconds == record.timeInSeconds && temperature == record.temperature && humidity == record.humidity;
 	}
 	
 	@Override

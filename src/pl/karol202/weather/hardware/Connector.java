@@ -206,9 +206,4 @@ public class Connector implements SerialPortEventListener
 	{
 		return ports.stream().filter(port -> port.getName().equals(name)).findFirst().orElse(null);
 	}
-	
-	public CommPortIdentifier getPortId()
-	{
-		return portId;
-	}
 }

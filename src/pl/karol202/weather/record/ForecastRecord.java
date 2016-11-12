@@ -21,9 +21,7 @@ public class ForecastRecord extends Record
 		
 		ForecastRecord that = (ForecastRecord) o;
 		
-		if(creationTimeInSeconds != that.creationTimeInSeconds) return false;
-		return forecastSource == that.forecastSource;
-		
+		return creationTimeInSeconds == that.creationTimeInSeconds && forecastSource == that.forecastSource;
 	}
 	
 	@Override
