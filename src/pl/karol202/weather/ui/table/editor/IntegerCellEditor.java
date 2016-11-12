@@ -49,13 +49,10 @@ public class IntegerCellEditor extends DefaultCellEditor implements FocusListene
 	@Override
 	public boolean stopCellEditing()
 	{
-		if(textField.isEditValid())
-		{
-			try { textField.commitEdit(); }
-			catch(ParseException ignored) {}
-			return super.stopCellEditing();
-		}
-		return false;
+		if(!textField.isEditValid()) return false;
+		try { textField.commitEdit(); }
+		catch(ParseException ignored) { }
+		return super.stopCellEditing();
 	}
 	
 	@Override

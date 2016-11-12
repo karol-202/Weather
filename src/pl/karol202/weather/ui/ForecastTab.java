@@ -12,9 +12,9 @@ import pl.karol202.weather.ui.table.renderer.HumidityCellRenderer;
 import pl.karol202.weather.ui.table.renderer.TemperatureCellRenderer;
 
 import javax.swing.*;
+import javax.swing.JOptionPane;
 import javax.swing.table.TableColumn;
 import java.awt.event.KeyEvent;
-import java.awt.event.KeyListener;
 import java.util.Date;
 import java.util.Iterator;
 
@@ -22,6 +22,31 @@ import static javax.swing.JOptionPane.*;
 
 public class ForecastTab
 {
+	private class KeyListener implements java.awt.event.KeyListener
+	{
+		@Override
+		public void keyTyped(KeyEvent e) { }
+		
+		@Override
+		public void keyPressed(KeyEvent e) { }
+		
+		@Override
+		public void keyReleased(KeyEvent e)
+		{
+			if(e.getKeyCode() != KeyEvent.VK_DELETE) return;
+			
+			int deleted = 0;
+			for(int row : tableForecast.getSelectedRows())
+			{
+				RecordsManager.getForecastRecords().remove(row - deleted);
+				deleted++;
+			}
+			RecordsManager.save();
+			forecastTableModel.fireTableDataChanged();
+			parent.updateGraph();
+		}
+	}
+	
 	private FormMain parent;
 	private ForecastRecordsTableModel forecastTableModel;
 	private int currentSourceFilter;
@@ -69,30 +94,7 @@ public class ForecastTab
 		humidityColumn.setMaxWidth(80);
 		humidityColumn.setCellEditor(new IntegerCellEditor(0, 100));
 		humidityColumn.setCellRenderer(new HumidityCellRenderer());
-		tableForecast.addKeyListener(new KeyListener()
-		{
-			@Override
-			public void keyTyped(KeyEvent e) { }
-			
-			@Override
-			public void keyPressed(KeyEvent e) { }
-			
-			@Override
-			public void keyReleased(KeyEvent e)
-			{
-				if(e.getKeyCode() != KeyEvent.VK_DELETE) return;
-				
-				int deleted = 0;
-				for(int row : tableForecast.getSelectedRows())
-				{
-					RecordsManager.getForecastRecords().remove(row - deleted);
-					deleted++;
-				}
-				RecordsManager.save();
-				forecastTableModel.fireTableDataChanged();
-				parent.updateGraph();
-			}
-		});
+		tableForecast.addKeyListener(new KeyListener());
 		
 		comboBoxSources.addItemListener(e -> updateSourceFilter());
 		updateSources();

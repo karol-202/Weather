@@ -27,13 +27,10 @@ public class DateCellEditor extends DefaultCellEditor
 	@Override
 	public Component getTableCellEditorComponent(JTable table, Object value, boolean isSelected, int row, int column)
 	{
-		if (value instanceof Date)
-		{
-			Date date = (Date) value;
-			textField.setText(format.format(date));
-			return textField;
-		}
-		return null;
+		if(!(value instanceof Date)) return null;
+		Date date = (Date) value;
+		textField.setText(format.format(date));
+		return textField;
 	}
 	
 	@Override
@@ -47,12 +44,9 @@ public class DateCellEditor extends DefaultCellEditor
 	@Override
 	public boolean stopCellEditing()
 	{
-		if(textField.isEditValid())
-		{
-			try { textField.commitEdit(); }
-			catch(ParseException ignored) {}
-			return super.stopCellEditing();
-		}
-		return false;
+		if(!textField.isEditValid()) return false;
+		try { textField.commitEdit(); }
+		catch(ParseException ignored) {}
+		return super.stopCellEditing();
 	}
 }

@@ -1,6 +1,8 @@
 package pl.karol202.weather.ui;
 
-import pl.karol202.weather.hardware.Connector;
+import pl.karol202.weather.hardware.ConnectionListener;
+import pl.karol202.weather.hardware.PortsManager;
+import pl.karol202.weather.hardware.WeatherStation;
 import pl.karol202.weather.record.Record;
 import pl.karol202.weather.record.RecordsManager;
 import pl.karol202.weather.ui.table.model.MeasureRecordsTableModel;
@@ -14,10 +16,10 @@ import java.awt.event.KeyListener;
 import java.util.ArrayList;
 import java.util.Date;
 
-public class MeasurementTab implements Connector.ConnectionListener
+public class MeasurementTab implements ConnectionListener
 {
 	private FormMain parent;
-	private Connector connector;
+	private WeatherStation weatherStation;
 	private MeasureRecordsTableModel measureTableModel;
 	
 	private JTable tableMeasurement;
@@ -81,28 +83,26 @@ public class MeasurementTab implements Connector.ConnectionListener
 		buttonConnect.addActionListener(e -> onConnectClick());
 		buttonRefresh.addActionListener(e -> onRefreshClick());
 		
-		progressBarMemory.setMaximum(Connector.MEMORY_SPACE_FOR_RECORDS);
+		progressBarMemory.setMaximum(WeatherStation.MEMORY_SPACE_FOR_RECORDS);
 	}
 	
 	private void initPorts()
 	{
-		Connector.refreshPorts();
-		if(connector != null) connector.checkConnection();
+		PortsManager.refreshPorts();
+		if(weatherStation != null) weatherStation.checkConnection(PortsManager.getPorts());
 		updatePortsComboBox();
 	}
 	
 	private void updatePortsComboBox()
 	{
-		ArrayList<String> names = Connector.getPortsNames();
-		String[] namesArray = names.toArray(new String[names.size()]);
-		comboBoxPort.setModel(new DefaultComboBoxModel<>(namesArray));
+		comboBoxPort.setModel(new DefaultComboBoxModel<>(PortsManager.getPortsNames()));
 	}
 	
 	private void onConnectClick()
 	{
-		if(connector == null)
+		if(weatherStation == null)
 		{
-			connector = new Connector(Connector.getPortByName((String) comboBoxPort.getSelectedItem()), this);
+			weatherStation = new WeatherStation(PortsManager.getPortByName((String) comboBoxPort.getSelectedItem()), this);
 			buttonSetTime.setEnabled(true);
 			buttonSaveTime.setEnabled(true);
 			buttonGetData.setEnabled(true);
@@ -114,22 +114,22 @@ public class MeasurementTab implements Connector.ConnectionListener
 	
 	private void onSetTimeClick()
 	{
-		connector.setTime();
+		weatherStation.setTime();
 	}
 	
 	private void onSaveTimeClick()
 	{
-		connector.saveTime();
+		weatherStation.saveTime();
 	}
 	
 	private void onGetDataClick()
 	{
-		connector.getData();
+		weatherStation.getData();
 	}
 	
 	private void onResetClick()
 	{
-		connector.reset();
+		weatherStation.reset();
 		progressBarMemory.setValue(0);
 	}
 	
@@ -140,8 +140,8 @@ public class MeasurementTab implements Connector.ConnectionListener
 	
 	private void disconnect()
 	{
-		connector.disconnect();
-		connector = null;
+		weatherStation.disconnect();
+		weatherStation = null;
 		buttonSetTime.setEnabled(false);
 		buttonSaveTime.setEnabled(false);
 		buttonGetData.setEnabled(false);
@@ -182,7 +182,7 @@ public class MeasurementTab implements Connector.ConnectionListener
 		measureTableModel.fireTableDataChanged();
 		parent.updateGraph();
 		
-		progressBarMemory.setValue(newRecords.size() * Connector.MEMORY_RECORD_SIZE);
+		progressBarMemory.setValue(newRecords.size() * WeatherStation.MEMORY_RECORD_SIZE);
 	}
 	
 	void setTableMeasurement(JTable tableMeasurement)
