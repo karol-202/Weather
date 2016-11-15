@@ -39,7 +39,7 @@ public class WeatherStation implements SerialPortEventListener
 	}
 	
 	public static final int MEMORY_SPACE_FOR_RECORDS = 1024 - 7;
-	public static final int MEMORY_RECORD_SIZE = 6;
+	public static final int MEMORY_RECORD_SIZE = 8;
 	
 	private final int TIMEOUT = 2000;
 	private final int BAUD_RATE = 9600;
@@ -218,9 +218,9 @@ public class WeatherStation implements SerialPortEventListener
 	
 	private void readRecord(ArrayList<Record> records) throws IOException
 	{
-		int time = DataUtils.bytesToInt(inputStream);
-		float temperature = DataUtils.bytesToInt(inputStream) / 10f;
-		float humidity = DataUtils.bytesToInt(inputStream) / 10f;
+		int time = DataUtils.readInt(inputStream);
+		float temperature = DataUtils.readInt(inputStream) / 10f;
+		float humidity = DataUtils.readInt(inputStream) / 10f;
 		records.add(new Record(time, temperature, humidity));
 	}
 }

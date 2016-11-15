@@ -20,6 +20,7 @@ public class RecordsSaver
 			saveMeasureRecords(RecordsManager.getMeasureRecords());
 			saveForecastRecords(RecordsManager.getForecastRecords());
 			saveForecastSources(RecordsManager.getForecastSources());
+			saveTimeZone();
 		}
 		catch(IOException e)
 		{
@@ -63,6 +64,11 @@ public class RecordsSaver
 			outputStream.write(name.length());
 			outputStream.write(name.getBytes());
 		}
+	}
+	
+	private static void saveTimeZone() throws IOException
+	{
+		outputStream.write(DataUtils.floatToBytes(RecordsManager.getTimeZone()));
 	}
 	
 	private static void closeOutputStream()

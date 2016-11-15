@@ -9,6 +9,8 @@ public class RecordsManager
 	private static ArrayList<Record> measureRecords;
 	private static ArrayList<ForecastRecord> forecastRecords;
 	private static ArrayList<String> forecastSources;
+	private static float timeZone;
+	
 	private static File file;
 	
 	public static void init()
@@ -50,5 +52,15 @@ public class RecordsManager
 	public static ArrayList<String> getForecastSources()
 	{
 		return forecastSources;
+	}
+	
+	public static float getTimeZone()
+	{
+		return timeZone;
+	}
+	
+	public static void setTimeZone(float timeZone)
+	{
+		RecordsManager.timeZone = timeZone;
 	}
 }

@@ -21,6 +21,7 @@ public class MeasurementTab implements ConnectionListener
 	private FormMain parent;
 	private WeatherStation weatherStation;
 	private MeasureRecordsTableModel measureTableModel;
+	private SpinnerNumberModel spinnerNumberModel;
 	
 	private JTable tableMeasurement;
 	private JButton buttonSetTime;
@@ -31,6 +32,7 @@ public class MeasurementTab implements ConnectionListener
 	private JButton buttonRefresh;
 	private JComboBox<String> comboBoxPort;
 	private JProgressBar progressBarMemory;
+	private JSpinner spinnerTimeZone;
 	
 	MeasurementTab(FormMain parent)
 	{
@@ -40,6 +42,7 @@ public class MeasurementTab implements ConnectionListener
 	void init()
 	{
 		measureTableModel = new MeasureRecordsTableModel();
+		spinnerNumberModel = new SpinnerNumberModel(RecordsManager.getTimeZone(), -12, 14, 0.25);
 		initPorts();
 
 		tableMeasurement.setModel(measureTableModel);
@@ -84,6 +87,9 @@ public class MeasurementTab implements ConnectionListener
 		buttonRefresh.addActionListener(e -> onRefreshClick());
 		
 		progressBarMemory.setMaximum(WeatherStation.MEMORY_SPACE_FOR_RECORDS);
+		
+		spinnerTimeZone.setModel(spinnerNumberModel);
+		spinnerTimeZone.addChangeListener(e -> updateTimeZone());
 	}
 	
 	private void initPorts()
@@ -96,6 +102,12 @@ public class MeasurementTab implements ConnectionListener
 	private void updatePortsComboBox()
 	{
 		comboBoxPort.setModel(new DefaultComboBoxModel<>(PortsManager.getPortsNames()));
+	}
+	
+	private void updateTimeZone()
+	{
+		RecordsManager.setTimeZone((float) (double) spinnerNumberModel.getNumber());
+		RecordsManager.save();
 	}
 	
 	private void onConnectClick()
@@ -228,5 +240,10 @@ public class MeasurementTab implements ConnectionListener
 	void setProgressBarMemory(JProgressBar progressBarMemory)
 	{
 		this.progressBarMemory = progressBarMemory;
+	}
+	
+	void setSpinnerTimeZone(JSpinner spinnerTimeZone)
+	{
+		this.spinnerTimeZone = spinnerTimeZone;
 	}
 }

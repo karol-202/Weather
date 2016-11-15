@@ -2,10 +2,11 @@ package pl.karol202.weather.hardware;
 
 import java.io.IOException;
 import java.io.InputStream;
+import java.nio.ByteBuffer;
 
 public class DataUtils
 {
-	public static int bytesToInt(InputStream stream) throws IOException
+	public static int readInt(InputStream stream) throws IOException
 	{
 		return (stream.read()        & 0xff) |
 			  ((stream.read() << 8 ) & 0xff00) |
@@ -21,5 +22,15 @@ public class DataUtils
 		bytes[2] = (byte) ((number >> 16) & 0xff);
 		bytes[3] = (byte) ((number >> 24) & 0xff);
 		return bytes;
+	}
+	
+	public static float bytesToFloat(byte[] bytes) throws IOException
+	{
+		return ByteBuffer.wrap(bytes).getFloat();
+	}
+	
+	public static byte[] floatToBytes(float number)
+	{
+		return ByteBuffer.allocate(4).putFloat(number).array();
 	}
 }

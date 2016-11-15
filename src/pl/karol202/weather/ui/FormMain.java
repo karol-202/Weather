@@ -41,6 +41,7 @@ public class FormMain extends JFrame
 	private JRadioButton radioFilterManual;
 	private JRadioButton radioFilterNewest;
 	private JCheckBox checkBoxError;
+	private JSpinner spinnerTimeZone;
 	
 	public FormMain()
 	{
@@ -75,6 +76,7 @@ public class FormMain extends JFrame
 		measurementTab.setButtonRefresh(buttonRefresh);
 		measurementTab.setComboBoxPort(comboBoxPort);
 		measurementTab.setProgressBarMemory(progressBarMemory);
+		measurementTab.setSpinnerTimeZone(spinnerTimeZone);
 		measurementTab.init();
 	}
 	

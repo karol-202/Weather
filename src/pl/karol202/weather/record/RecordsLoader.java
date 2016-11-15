@@ -20,6 +20,7 @@ public class RecordsLoader
 			loadMeasureRecords(RecordsManager.getMeasureRecords());
 			loadForecastRecords(RecordsManager.getForecastRecords());
 			loadForecastSources(RecordsManager.getForecastSources());
+			loadTimeZone();
 		}
 		finally
 		{
@@ -30,12 +31,12 @@ public class RecordsLoader
 	private static void loadMeasureRecords(ArrayList<Record> records) throws IOException
 	{
 		records.clear();
-		int length = DataUtils.bytesToInt(inputStream);
+		int length = DataUtils.readInt(inputStream);
 		for(int i = 0; i < length; i++)
 		{
-			int time = DataUtils.bytesToInt(inputStream);
-			float temperature = DataUtils.bytesToInt(inputStream) / 10f;
-			float humidity = DataUtils.bytesToInt(inputStream) / 10f;
+			int time = DataUtils.readInt(inputStream);
+			float temperature = DataUtils.readInt(inputStream) / 10f;
+			float humidity = DataUtils.readInt(inputStream) / 10f;
 			records.add(new Record(time, temperature, humidity));
 		}
 	}
@@ -43,14 +44,14 @@ public class RecordsLoader
 	private static void loadForecastRecords(ArrayList<ForecastRecord> records) throws IOException
 	{
 		records.clear();
-		int length = DataUtils.bytesToInt(inputStream);
+		int length = DataUtils.readInt(inputStream);
 		for(int i = 0; i < length; i++)
 		{
-			int time = DataUtils.bytesToInt(inputStream);
-			int creationTime = DataUtils.bytesToInt(inputStream);
+			int time = DataUtils.readInt(inputStream);
+			int creationTime = DataUtils.readInt(inputStream);
 			int forecastSource = readByte();
-			float temperature = DataUtils.bytesToInt(inputStream) / 10f;
-			float humidity = DataUtils.bytesToInt(inputStream) / 10f;
+			float temperature = DataUtils.readInt(inputStream) / 10f;
+			float humidity = DataUtils.readInt(inputStream) / 10f;
 			records.add(new ForecastRecord(time, creationTime, forecastSource, temperature, humidity));
 		}
 	}
@@ -64,6 +65,11 @@ public class RecordsLoader
 			int nameLength = readByte();
 			sources.add(new String(readBytes(nameLength)));
 		}
+	}
+	
+	private static void loadTimeZone() throws IOException
+	{
+		RecordsManager.setTimeZone(DataUtils.bytesToFloat(readBytes(4)));
 	}
 	
 	private static int readByte() throws IOException
