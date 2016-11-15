@@ -204,7 +204,7 @@ public class GraphPanel extends JPanel
 		}
 	}
 	
-	private float map(int srcMin, int srcMax, int dstMin, int dstMax, float value)
+	private float map(float srcMin, float srcMax, float dstMin, float dstMax, float value)
 	{
 		return (value - srcMin) / (srcMax - srcMin) * (dstMax - dstMin) + dstMin;
 	}
@@ -336,8 +336,8 @@ public class GraphPanel extends JPanel
 			if(!isRecordProper(record)) continue;
 			Record corresponding = getCorrespondingRecordFromList(record, secondList);
 			if(corresponding == null) continue;
-			int temperatureDiff = corresponding.getTemperature() - record.getTemperature();
-			int humidityDiff = corresponding.getHumidity() - record.getHumidity();
+			float temperatureDiff = corresponding.getTemperature() - record.getTemperature();
+			float humidityDiff = corresponding.getHumidity() - record.getHumidity();
 			if(invert) temperatureDiff = 0 - temperatureDiff;
 			if(invert) humidityDiff = 0 - humidityDiff;
 			Record error = new ForecastErrorRecord(record.getTimeInSeconds(), temperatureDiff, humidityDiff);
@@ -450,7 +450,7 @@ public class GraphPanel extends JPanel
 			if(hasRecordLowerTemperature(lowestFromForecastRecords, lowest))
 				lowest = lowestFromForecastRecords;
 		}
-		return lowest != null ? lowest.getTemperature() : 0;
+		return lowest != null ? (int) Math.floor(lowest.getTemperature()) : 0;
 	}
 	
 	private Record getRecordWithLowestTemperaure(ArrayList<? extends Record> records)
@@ -469,7 +469,7 @@ public class GraphPanel extends JPanel
 	private int getLowestTemperatureFromForecastErrors()
 	{
 		Record lowest = getRecordWithLowestTemperaure(forecastErrorData);
-		return lowest != null ? lowest.getTemperature() : 0;
+		return lowest != null ? (int) Math.floor(lowest.getTemperature()) : 0;
 	}
 	
 	private int getHighestTemperature()
@@ -483,7 +483,7 @@ public class GraphPanel extends JPanel
 			if(hasRecordHigherTemperature(highestFromForecastRecords, highest))
 				highest = highestFromForecastRecords;
 		}
-		return highest != null ? highest.getTemperature() : 1;
+		return highest != null ? (int) Math.ceil(highest.getTemperature()) : 1;
 	}
 	
 	private Record getRecordWithHighestTemperature(ArrayList<? extends Record> records)
@@ -502,7 +502,7 @@ public class GraphPanel extends JPanel
 	private int getHighestTemperatureFromForecastErrors()
 	{
 		Record highest = getRecordWithHighestTemperature(forecastErrorData);
-		return highest != null ? highest.getTemperature() : 0;
+		return highest != null ? (int) Math.ceil(highest.getTemperature()) : 0;
 	}
 	
 	private boolean isRecordProper(Record record)

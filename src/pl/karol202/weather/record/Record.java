@@ -8,10 +8,10 @@ public class Record implements Comparable<Record>
 	private static DateFormat dateFormat;
 	
 	private int timeInSeconds;
-	private int temperature;
-	private int humidity;
+	private float temperature;
+	private float humidity;
 	
-	public Record(int timeInSeconds, int temperature, int humidity)
+	public Record(int timeInSeconds, float temperature, float humidity)
 	{
 		this.timeInSeconds = timeInSeconds;
 		this.temperature = temperature;
@@ -26,15 +26,17 @@ public class Record implements Comparable<Record>
 		
 		Record record = (Record) o;
 		
-		return timeInSeconds == record.timeInSeconds && temperature == record.temperature && humidity == record.humidity;
+		if(timeInSeconds != record.timeInSeconds) return false;
+		if(Float.compare(record.temperature, temperature) != 0) return false;
+		return Float.compare(record.humidity, humidity) == 0;
 	}
 	
 	@Override
 	public int hashCode()
 	{
-		int result = timeInSeconds ^ (timeInSeconds >>> 32);
-		result = 31 * result + temperature;
-		result = 31 * result + humidity;
+		int result = timeInSeconds;
+		result = 31 * result + (temperature != +0.0f ? Float.floatToIntBits(temperature) : 0);
+		result = 31 * result + (humidity != +0.0f ? Float.floatToIntBits(humidity) : 0);
 		return result;
 	}
 	
@@ -76,12 +78,12 @@ public class Record implements Comparable<Record>
 		return timeInSeconds;
 	}
 	
-	public int getTemperature()
+	public float getTemperature()
 	{
 		return temperature;
 	}
 	
-	public int getHumidity()
+	public float getHumidity()
 	{
 		return humidity;
 	}
@@ -91,12 +93,12 @@ public class Record implements Comparable<Record>
 		this.timeInSeconds = timeInSeconds;
 	}
 	
-	public void setTemperature(int temperature)
+	public void setTemperature(float temperature)
 	{
 		this.temperature = temperature;
 	}
 	
-	public void setHumidity(int humidity)
+	public void setHumidity(float humidity)
 	{
 		this.humidity = humidity;
 	}

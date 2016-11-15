@@ -219,8 +219,8 @@ public class WeatherStation implements SerialPortEventListener
 	private void readRecord(ArrayList<Record> records) throws IOException
 	{
 		int time = DataUtils.bytesToInt(inputStream);
-		int temperature = inputStream.read();
-		int humidity = inputStream.read();
+		float temperature = DataUtils.bytesToInt(inputStream) / 10f;
+		float humidity = DataUtils.bytesToInt(inputStream) / 10f;
 		records.add(new Record(time, temperature, humidity));
 	}
 }

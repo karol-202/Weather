@@ -75,10 +75,10 @@ public class ForecastRecordsTableModel extends RecordsTableModel<ForecastRecord>
 			record.setForecastSource((int) aValue);
 			break;
 		case 3:
-			record.setTemperature((int) aValue);
+			record.setTemperature((float) (int) aValue);
 			break;
 		case 4:
-			record.setHumidity((int) aValue);
+			record.setHumidity((float) (int) aValue);
 			break;
 		}
 		fireTableCellUpdated(rowIndex, columnIndex);

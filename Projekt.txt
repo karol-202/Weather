@@ -1,12 +1,12 @@
 ﻿#1. Struktura pojedynczego rekordu:
 	Rekord ma na celu przechowywanie danych dotyczących pogody w danym momencie czasu.
 	* time(int/unsigned long, liczba 4 bajty) - czas rekordu w sekundach
-	* temperature(byte) - temperatura -128 - 127
-	* humidity(byte) - wilgotność -128 - 127
+	* temperature(int) - temperatura * 10
+	* humidity(int) - wilgotność (0.0 - 100.0) * 10
 #2. Protokół komunikacyjny:
 	A. Komunikaty:
 		1. SET_TIME(1) - komunikat presyłający aktualny czas z komputera do Arduino,
-						 na czas wykonywania którego, zapalana jest dioda LED
+						 na czas wykonywania którego, dioda LED jest zapalana na czerwono
 			Struktura: 1, x, x, x, x
 				x - to liczba(4 bajty) zawierająca aktualny czas w sekundach
 		2. SAVE_TIME(2) - komunikat rozkazujący Arduino zapisanie aktualnego czasu do pamięci
@@ -14,9 +14,10 @@
 		3. GET_DATA(3) - komunikat rozkazujący Arduino wysłanie wszystkich rekordów do komputera
 			Struktura: 3
 			Po odebraniu komunikatu przez Arduino, następuje przesłanie danych w następującym formacie:
-				l - ilość rekordów
-				l, { czas(4 bajty), temperatura, wilogotność } l razy
-		4. MESSAGE_RESET(4) - komunikat rozkazujący Arduino wymazać wszystkie dane z pamięci
+				n - ilość rekordów
+				n, { czas(4 bajty), temperatura * 10(4 bajty), wilogotność * 10(4 bajty) } n razy
+		4. MESSAGE_RESET(4) - komunikat rozkazujący Arduino wymazać wszystkie dane z pamięci,
+							  na czas wykonywania którego, dioda LED zapalana jest na niebiesko
 			Struktura: 4
 	B. Sposób połączenia
 		1. Połączenie nawiązywane jest za pomocą portu szeregowego (USB).
@@ -30,17 +31,29 @@
 	A. Działanie:
 		a) Start:
 			1. Inicializacja portu szeregowego
-			2. Inicjalizacja czjunika DHT11 na pinie 8
-			3. Incializacja pinów:
-				* LED(13) - wyjście
-			4. Odczyt aktualnego czasu z pamięci
+			2. Inicjalizacja czjunika DHT11/DHT22 na pinie 8
+			3. Inicializacja wyświetlacza LCD
+			4. Incializacja pinów:
+				* LED czerwony(9) - wyjście
+				* LED zielony(10) - wyjście
+				* LED niebieski(11) - wyjście
+				* przycisk(12) - wejście pullup
+				* masa podświetlenia wyświetlacza(EXPANDER_0) - wyjście
+			5. Odczyt aktualnego czasu z pamięci
+			6. Wyłączenie diody LED
+			7. Włączenie podświetlenia wyświetlacza
 		b) Pętla główna:
-			1. Zebranie porcji danych, świecenie LED przez 1s
-			2. Odczyt komunikatów z portu szeregowego
-			3. Zebranie porcji danych po upływie 30min
+			1. Odczyt komunikatów z portu szeregowego
+			2. Jeśli przycisk(12) został naciśnięty:
+				* zmień stan podświetlenia na przeciwny
+				* wyłącz diodę LED
+			3. Aktualizuj stan wyświetlacza LCD, jeśli minęła 1 sekunda od ostatniej aktualizacji:
+				* pokaż aktualną datę i godzinę
+				* pokaż aktualną temperaturę i wilgotność
+			4. Zbierz i zapisz w pamięci dane, jeśli minęło 30 minut od ostatniego zapisu
 	B. Pamięć EPROM - struktura:
 		l - długość pamięci
-		0 - l-8   rekordy
-		l-7 - l-4   aktualny czas
-		l-3 - l-2   wartość sprawdzająca, czy pamięć jest pusta, 255 - pusta, 0 - niepusta
+		0 - l-7   rekordy
+		l-6 - l-3   aktualny czas
+		l-2 - l-2   wartość sprawdzająca, czy pamięć jest pusta, 255 - pusta, 0 - niepusta
 		l-1 - l-0   ilość rekordów

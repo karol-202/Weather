@@ -34,8 +34,8 @@ public class RecordsLoader
 		for(int i = 0; i < length; i++)
 		{
 			int time = DataUtils.bytesToInt(inputStream);
-			int temperature = readByte();
-			int humidity = readByte();
+			float temperature = DataUtils.bytesToInt(inputStream) / 10f;
+			float humidity = DataUtils.bytesToInt(inputStream) / 10f;
 			records.add(new Record(time, temperature, humidity));
 		}
 	}
@@ -49,8 +49,8 @@ public class RecordsLoader
 			int time = DataUtils.bytesToInt(inputStream);
 			int creationTime = DataUtils.bytesToInt(inputStream);
 			int forecastSource = readByte();
-			int temperature = readByte();
-			int humidity = readByte();
+			float temperature = DataUtils.bytesToInt(inputStream) / 10f;
+			float humidity = DataUtils.bytesToInt(inputStream) / 10f;
 			records.add(new ForecastRecord(time, creationTime, forecastSource, temperature, humidity));
 		}
 	}

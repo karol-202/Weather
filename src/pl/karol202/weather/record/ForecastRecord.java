@@ -5,7 +5,7 @@ public class ForecastRecord extends Record
 	private int creationTimeInSeconds;
 	private int forecastSource;
 	
-	public ForecastRecord(int timeInSeconds, int creationTimeInSeconds, int forecastSource, int temperature, int humidity)
+	public ForecastRecord(int timeInSeconds, int creationTimeInSeconds, int forecastSource, float temperature, float humidity)
 	{
 		super(timeInSeconds, temperature, humidity);
 		this.creationTimeInSeconds = creationTimeInSeconds;

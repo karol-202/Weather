@@ -2,37 +2,15 @@
 #include <EEPROM.h>
 #include <Time.h>
 #include <LiquidCrystal.h>
-
-#define PIN_BUTTON_LIGHT 2
-#define PIN_LCD_RS 3
-#define PIN_LCD_E 4
-#define PIN_LCD_D0 5
-#define PIN_LCD_D1 6
-#define PIN_LCD_D2 7
-#define PIN_LCD_D3 8
-#define PIN_DHT 9
-#define PIN_LED_RED 10
-#define PIN_LED_GREEN 11
-#define PIN_LED_BLUE 12
-#define PIN_LIGHT 13
-
-#define MESSAGE_SET_TIME 1
-#define MESSAGE_SAVE_TIME 2
-#define MESSAGE_GET_DATA 3
-#define MESSAGE_RESET 4
-
-#define MEASURE_DELAY 1800 //30 minut
-
-struct Record
-{
-  unsigned long time;
-  byte temperature;
-  byte humidity;
-};
+#include <Wire.h>
+#include "PCF8574.h"
+#include "weather.h"
 
 DHT dht(PIN_DHT, DHT11);
 LiquidCrystal lcd(PIN_LCD_RS, PIN_LCD_E, PIN_LCD_D0, PIN_LCD_D1, PIN_LCD_D2, PIN_LCD_D3);
-int measureDelay;
+PCF8574 expander;
+long measureTime;
+long lcdUpdateTime;
 bool lightEnabled;
 
 void setup()
@@ -40,154 +18,87 @@ void setup()
   Serial.begin(9600);
   dht.begin();
   lcd.begin(16, 2);
+  expander.begin(32);
   pinMode(PIN_LED_RED, OUTPUT);
   pinMode(PIN_LED_GREEN, OUTPUT);
   pinMode(PIN_LED_BLUE, OUTPUT);
   pinMode(PIN_BUTTON_LIGHT, INPUT_PULLUP);
-  pinMode(PIN_LIGHT, OUTPUT);
+  expander.pinMode(PIN_EXP_LIGHT, OUTPUT);
 
   int addrTime = EEPROM.length() - 7;
   time_t time;
   EEPROM.get(addrTime, time);
   setTime(time);
 
-  measureDelay = 10; //Czekaj 10 sekund przed pierwszym zapisem
+  measureTime = now() + 10; //Czekaj 10 sekund przed pierwszym zapisem
+  lcdUpdateTime = now();
   lightEnabled = true;
 
-  digitalWrite(PIN_LED_RED, HIGH);
-  digitalWrite(PIN_LED_GREEN, HIGH);
-  digitalWrite(PIN_LED_BLUE, HIGH);
-  digitalWrite(PIN_LIGHT, HIGH);
-
-  attachInterrupt(digitalPinToInterrupt(PIN_BUTTON_LIGHT), toggleLight, FALLING);
+  toggleLED(PIN_LED_RED, false);
+  toggleLED(PIN_LED_GREEN, false);
+  toggleLED(PIN_LED_BLUE, false);
+  expander.digitalWrite(PIN_EXP_LIGHT, LOW);
 }
 
 void loop()
 {
-  unsigned long lastTime = now();
-  while(now() < lastTime + measureDelay)
+  while(now() < measureTime)
   {
-    if(Serial.available() > 0)
-    {
-      int message = Serial.read();
-      switch(message)
-      {
-      case MESSAGE_SET_TIME:
-        updateTime();
-        break;
-      case MESSAGE_SAVE_TIME:
-      {
-        int addrTime = EEPROM.length() - 7;
-        EEPROM.put(addrTime, now());
-        break;
-      }
-      case MESSAGE_GET_DATA:
-        sendData();
-        break;
-      case MESSAGE_RESET:
-        clearAll();
-        break;
-      }
-    }
+    checkForData();
+    checkButton();
     updateLCD();
-    delay(500); //Czekaj 0.5s przed kolejnym sprawdzeniem
+    delay(10); //Czekaj 0.01s przed kolejnym sprawdzeniem
   }
-
-  digitalWrite(PIN_LED_GREEN, LOW);
   collectData();
-  delay(1000);
-  digitalWrite(PIN_LED_GREEN, HIGH);
-  measureDelay = MEASURE_DELAY - 1; //1 - czas zużyty na świecenie diody LED
+  measureTime += MEASURE_DELAY;
 }
 
-void updateTime()
+void checkForData()
 {
-  digitalWrite(PIN_LED_RED, LOW);
-  while(Serial.available() < 4) delay(10);
-  int first = Serial.read();
-  int second = Serial.read();
-  int third = Serial.read();
-  int fourth = Serial.read();
-  time_t time = bytesToLong(first, second, third, fourth);
-  setTime(time);
-  digitalWrite(PIN_LED_RED, HIGH);
-}
-
-void sendData()
-{
-  int length = getLength();
-  Serial.write((byte) length);
-  for(int i = 0; i < length; i++)
+  if(Serial.available() > 0)
   {
-    int addr = i * sizeof(Record);
-    Record record;
-    EEPROM.get(addr, record);
-
-    byte time[4];
-    longToBytes(record.time, time);
-    Serial.write(time, 4);
-    Serial.write(record.temperature);
-    Serial.write(record.humidity);
+    int message = Serial.read();
+    switch(message)
+    {
+    case MESSAGE_SET_TIME:
+      updateTime();
+      break;
+    case MESSAGE_SAVE_TIME:
+      saveTime();
+      break;
+    case MESSAGE_GET_DATA:
+      sendData();
+      break;
+    case MESSAGE_RESET:
+      clearAll();
+      break;
+    }
   }
 }
 
-void collectData()
+void checkButton()
 {
-  struct Record record;
-  record.time = now();
-  record.temperature = dht.readTemperature();
-  record.humidity = dht.readHumidity();
-
-  int length = getLength();
-  int addr = length * sizeof(Record);
-  EEPROM.put(addr, record);
-
-  int addrLength = EEPROM.length() - 2;
-  int addrEmpty = EEPROM.length() - 3;
-  
-  EEPROM.put(addrLength, ++length);
-  EEPROM.update(addrEmpty, 0);
-}
-
-int getLength()
-{
-  int addrLength = EEPROM.length() - 2;
-  int addrEmpty = EEPROM.length() - 3;
-  
-  int length;
-  EEPROM.get(addrLength, length);
-  if(EEPROM.read(addrEmpty) == 255) length = 0;
-  
-  return length;
-}
-
-void clearAll()
-{
-  digitalWrite(PIN_LED_BLUE, LOW);
-  for(int i = 0; i < EEPROM.length(); i++) EEPROM.update(i, 255);
-  digitalWrite(PIN_LED_BLUE, HIGH);
-}
-
-unsigned long bytesToLong(int first, int second, int third, int fourth)
-{
-  return ((unsigned long) first         & 0xff) |
-        (((unsigned long) second << 8 ) & 0xff00) |
-        (((unsigned long) third  << 16) & 0xff0000) |
-        (((unsigned long) fourth << 24) & 0xff000000);      
-}
-
-void longToBytes(unsigned long number, byte* bytes)
-{
-  bytes[0] =  number        & 0xff;
-  bytes[1] = (number >> 8 ) & 0xff;
-  bytes[2] = (number >> 16) & 0xff;
-  bytes[3] = (number >> 24) & 0xff;
+  if(digitalRead(PIN_BUTTON_LIGHT) == LOW)
+  {
+    lightEnabled = !lightEnabled;
+    expander.digitalWrite(PIN_EXP_LIGHT, lightEnabled ? LOW : HIGH);
+    if(!lightEnabled)
+    {
+      toggleLED(PIN_LED_RED, false);
+      toggleLED(PIN_LED_GREEN, false);
+      toggleLED(PIN_LED_BLUE, false);
+    }
+    delay(200);
+  }
 }
 
 void updateLCD()
 {
-  int temperature = (int) dht.readTemperature();
-  int humidity = (int) dht.readHumidity();
+  if(now() < lcdUpdateTime) return;
+  lcdUpdateTime = now() + LCD_DELAY;
+  
+  float temperature = (float) dht.readTemperature();
+  float humidity = (float) dht.readHumidity();
   lcd.clear();
   updateLCDDate();
   updateLCDWeather(temperature, humidity);
@@ -207,19 +118,124 @@ void updateLCDDate()
   lcd.print(date);
 }
 
-void updateLCDWeather(int temp, int hum)
+void updateLCDWeather(float temp, float hum)
 {
-  String temperature = String(temp) + "'C";
+  String temperature = String(temp, 1) + "'C";
   lcd.setCursor(0, 1);
   lcd.print(temperature);
 
-  String humidity = String(hum) + "%";
-  lcd.setCursor(6, 1);
+  String humidity = String(hum, 1) + "%";
+  lcd.setCursor(7, 1);
   lcd.print(humidity);
 }
 
-void toggleLight()
+void toggleLED(int led, bool state)
 {
-  lightEnabled = !lightEnabled;
-  digitalWrite(PIN_LIGHT, lightEnabled ? LOW : HIGH);
+  int value = state ? LOW : HIGH;
+  if(state && !lightEnabled) return;
+  digitalWrite(led, value);
+}
+
+
+void collectData()
+{
+  toggleLED(PIN_LED_GREEN, true);
+
+  struct Record record;
+  record.time = now();
+  record.temperature = (int) (dht.readTemperature() * 10.0);
+  record.humidity = (int) (dht.readHumidity() * 10.0);
+
+  int length = getLength();
+  int addr = length * sizeof(Record);
+  EEPROM.put(addr, record);
+
+  int addrLength = EEPROM.length() - 2;
+  int addrEmpty = EEPROM.length() - 3;
+  
+  EEPROM.put(addrLength, ++length);
+  EEPROM.update(addrEmpty, 0);
+
+  delay(1000);
+  toggleLED(PIN_LED_GREEN, false);
+}
+
+void updateTime()
+{
+  toggleLED(PIN_LED_RED, true);
+  while(Serial.available() < 4) delay(10);
+  int first = Serial.read();
+  int second = Serial.read();
+  int third = Serial.read();
+  int fourth = Serial.read();
+  time_t newTime = bytesToLong(first, second, third, fourth);
+  time_t timeDifference = newTime - now();
+  setTime(newTime);
+  measureTime += timeDifference;
+  lcdUpdateTime += timeDifference;
+  toggleLED(PIN_LED_RED, false);
+}
+
+void saveTime()
+{
+  int addrTime = EEPROM.length() - 7;
+  EEPROM.put(addrTime, now());
+}
+
+void sendData()
+{
+  int length = getLength();
+  Serial.write((byte) length);
+  for(int i = 0; i < length; i++)
+  {
+    int addr = i * sizeof(Record);
+    Record record;
+    EEPROM.get(addr, record);
+
+    byte time[4];
+    byte temperature[4];
+    byte humidity[4];
+    longToBytes(record.time, time);
+    longToBytes((long) record.temperature, temperature);
+    longToBytes((long) record.humidity, humidity);
+    
+    Serial.write(time, 4);
+    Serial.write(temperature, 4);
+    Serial.write(humidity, 4);
+  }
+}
+
+void clearAll()
+{
+  toggleLED(PIN_LED_BLUE, true);
+  for(int i = 0; i < EEPROM.length(); i++) EEPROM.update(i, 255);
+  toggleLED(PIN_LED_BLUE, false);
+}
+
+int getLength()
+{
+  int addrLength = EEPROM.length() - 2;
+  int addrEmpty = EEPROM.length() - 3;
+  
+  int length;
+  EEPROM.get(addrLength, length);
+  if(EEPROM.read(addrEmpty) == 255) length = 0;
+  
+  return length;
+}
+
+unsigned long bytesToLong(int first, int second, int third, int fourth)
+{
+  return ((unsigned long) first         & 0xff) |
+        (((unsigned long) second << 8 ) & 0xff00) |
+        (((unsigned long) third  << 16) & 0xff0000) |
+        (((unsigned long) fourth << 24) & 0xff000000);      
+}
+
+void longToBytes(unsigned long number, byte* bytes)
+{
+  bytes[0] =  number        & 0xff;
+  bytes[1] = (number >> 8 ) & 0xff;
+  bytes[2] = (number >> 16) & 0xff;
+  bytes[3] = (number >> 24) & 0xff;
 }

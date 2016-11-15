@@ -37,8 +37,8 @@ public class RecordsSaver
 		for(Record record : records)
 		{
 			outputStream.write(DataUtils.intToBytes(record.getTimeInSeconds()));
-			outputStream.write(record.getTemperature());
-			outputStream.write(record.getHumidity());
+			outputStream.write(DataUtils.intToBytes((int) (record.getTemperature() * 10)));
+			outputStream.write(DataUtils.intToBytes((int) (record.getHumidity() * 10)));
 		}
 	}
 	
@@ -50,8 +50,8 @@ public class RecordsSaver
 			outputStream.write(DataUtils.intToBytes(record.getTimeInSeconds()));
 			outputStream.write(DataUtils.intToBytes(record.getCreationTimeInSeconds()));
 			outputStream.write(record.getForecastSource());
-			outputStream.write(record.getTemperature());
-			outputStream.write(record.getHumidity());
+			outputStream.write(DataUtils.intToBytes((int) (record.getTemperature() * 10)));
+			outputStream.write(DataUtils.intToBytes((int) (record.getHumidity() * 10)));
 		}
 	}
 	

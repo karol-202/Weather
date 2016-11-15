@@ -2,7 +2,7 @@ package pl.karol202.weather.record;
 
 public class ForecastErrorRecord extends Record
 {
-	public ForecastErrorRecord(int timeInSeconds, int temperature, int humidity)
+	public ForecastErrorRecord(int timeInSeconds, float temperature, float humidity)
 	{
 		super(timeInSeconds, temperature, humidity);
 	}
