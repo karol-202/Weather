@@ -6,7 +6,7 @@
 #include "PCF8574.h"
 #include "weather.h"
 
-DHT dht(PIN_DHT, DHT11);
+DHT dht(PIN_DHT, DHT22);
 LiquidCrystal lcd(PIN_LCD_RS, PIN_LCD_E, PIN_LCD_D0, PIN_LCD_D1, PIN_LCD_D2, PIN_LCD_D3);
 PCF8574 expander;
 long measureTime;
@@ -17,6 +17,7 @@ void setup()
 {
   Serial.begin(9600);
   dht.begin();
+  setupChars();
   lcd.begin(16, 2);
   expander.begin(32);
   pinMode(PIN_LED_RED, OUTPUT);
@@ -38,6 +39,17 @@ void setup()
   toggleLED(PIN_LED_GREEN, false);
   toggleLED(PIN_LED_BLUE, false);
   expander.digitalWrite(PIN_EXP_LIGHT, LOW);
+}
+
+void setupChars()
+{
+  lcd.createChar(DEGREE_CHAR, degreeCharBytes);
+  lcd.createChar(RAIN_0_CHAR, rain0CharBytes);
+  lcd.createChar(RAIN_1_CHAR, rain1CharBytes);
+  lcd.createChar(RAIN_2_CHAR, rain2CharBytes);
+  lcd.createChar(RAIN_3_CHAR, rain3CharBytes);
+  lcd.createChar(RAIN_4_CHAR, rain4CharBytes);
+  lcd.createChar(RAIN_5_CHAR, rain5CharBytes);
 }
 
 void loop()
@@ -99,9 +111,11 @@ void updateLCD()
   
   float temperature = (float) dht.readTemperature();
   float humidity = (float) dht.readHumidity();
+  int rain = analogRead(PIN_RAIN);
+  
   lcd.clear();
   updateLCDDate();
-  updateLCDWeather(temperature, humidity);
+  updateLCDWeather(temperature, humidity, rain);
 }
 
 void updateLCDDate()
@@ -118,15 +132,70 @@ void updateLCDDate()
   lcd.print(date);
 }
 
-void updateLCDWeather(float temp, float hum)
+void updateLCDWeather(float temp, float hum, int rainVal)
 {
   String temperature = String(temp, 1) + "'C";
   lcd.setCursor(0, 1);
   lcd.print(temperature);
+  lcd.setCursor(temperature.length() - 2, 1); //Degree char
+  lcd.write(byte(DEGREE_CHAR));
 
   String humidity = String(hum, 1) + "%";
   lcd.setCursor(7, 1);
   lcd.print(humidity);
+
+  byte rain[2];
+  getRainChars(rainVal, rain);
+  lcd.setCursor(13, 1);
+  lcd.print("D");
+  lcd.write(rain[0]);
+  lcd.write(rain[1]);
+}
+
+void getRainChars(int rain, byte* chars)
+{
+  int level = map(rain, 0, 1024, 11, 0);
+  if(level <= 5) chars[1] = RAIN_0_CHAR;
+  else chars[0] = RAIN_5_CHAR;
+  switch(level)
+  {
+  case 0:
+    chars[0] = RAIN_0_CHAR;
+    break;
+  case 1:
+    chars[0] = RAIN_1_CHAR;
+    break;
+  case 2:
+    chars[0] = RAIN_2_CHAR;
+    break;
+  case 3:
+    chars[0] = RAIN_3_CHAR;
+    break;
+  case 4:
+    chars[0] = RAIN_4_CHAR;
+    break;
+  case 5:
+    chars[0] = RAIN_5_CHAR;
+    break;
+  case 6:
+    chars[1] = RAIN_0_CHAR;
+    break;
+  case 7:
+    chars[1] = RAIN_1_CHAR;
+    break;
+  case 8:
+    chars[1] = RAIN_2_CHAR;
+    break;
+  case 9:
+    chars[1] = RAIN_3_CHAR;
+    break;
+  case 10:
+    chars[1] = RAIN_4_CHAR;
+    break;
+  case 11:
+    chars[1] = RAIN_5_CHAR;
+    break;
+  }
 }
 
 void toggleLED(int led, bool state)
@@ -145,6 +214,7 @@ void collectData()
   record.time = now();
   record.temperature = (int) (dht.readTemperature() * 10.0);
   record.humidity = (int) (dht.readHumidity() * 10.0);
+  record.rain = (byte) map(analogRead(PIN_RAIN), 0, 1024, 127, -128);
 
   int length = getLength();
   int addr = length * sizeof(Record);
@@ -202,6 +272,7 @@ void sendData()
     Serial.write(time, 4);
     Serial.write(temperature, 4);
     Serial.write(humidity, 4);
+    Serial.write(record.rain);
   }
 }
 

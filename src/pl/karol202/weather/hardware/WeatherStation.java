@@ -221,6 +221,7 @@ public class WeatherStation implements SerialPortEventListener
 		int time = DataUtils.readInt(inputStream);
 		float temperature = DataUtils.readInt(inputStream) / 10f;
 		float humidity = DataUtils.readInt(inputStream) / 10f;
+		int rain = inputStream.read();
 		records.add(new Record(time, temperature, humidity));
 	}
 }
