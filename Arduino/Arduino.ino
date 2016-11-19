@@ -272,9 +272,7 @@ void sendData()
     Serial.write(time, 4);
     Serial.write(temperature, 4);
     Serial.write(humidity, 4);
-    //Serial.write(record.rain);
-    if(record.rain < 10) Serial.write(record.rain);
-    else Serial.write(map(record.rain, 127, 255, 0, 100));
+    Serial.write(record.rain);
   }
 }
 

@@ -2,8 +2,6 @@ package pl.karol202.weather.record;
 
 public class MeasureRecord extends Record
 {
-	public static final int MAX_RAIN_LEVEL = 255;
-	
 	private int rainLevel;
 	
 	public MeasureRecord(int timeInSeconds, float temperature, float humidity, int rainLevel)
@@ -35,9 +33,7 @@ public class MeasureRecord extends Record
 	@Override
 	public String toString()
 	{
-		float rain = rainLevel / (float) MAX_RAIN_LEVEL * 100;
-		return super.toString() +
-			   getRainLevelString() + ": " + rain + "%" + "<br>";
+		return super.toString() + getRainLevelString() + ": " + rainLevel + "%" + "<br>";
 	}
 	
 	protected String getName()

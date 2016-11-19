@@ -18,6 +18,7 @@ public class GraphPanel extends JPanel
 	private final int MARGIN = 30;
 	private final int SECONDS_IN_DAY = 60 * 60 * 24;
 	private final int MAX_HIGHLIGHT_DISTANCE = 20;
+	private final int MAX_RECORDS_TIME_DIFFERENCE = 60 * 60 * 12;
 	
 	private boolean showMeasurementTemperature;
 	private boolean showMeasurementHumidity;
@@ -205,7 +206,7 @@ public class GraphPanel extends JPanel
 		for(Record record : records)
 		{
 			if(!isRecordProper(record)) continue;
-			if(lastRecord != null)
+			if(lastRecord != null && record.getTimeInSeconds() - lastRecord.getTimeInSeconds() < MAX_RECORDS_TIME_DIFFERENCE)
 			{
 				int x = (int) map(firstVisibleTime, lastVisibleTime, MARGIN, getWidth() - MARGIN, record.getTimeInSeconds());
 				int y = Math.round(yFunction.apply(record));

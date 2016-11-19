@@ -3,7 +3,7 @@ package pl.karol202.weather.record;
 import java.text.DateFormat;
 import java.util.Date;
 
-public abstract class Record implements Comparable<MeasureRecord>
+public abstract class Record implements Comparable<Record>
 {
 	private static DateFormat dateFormat;
 	
@@ -51,7 +51,7 @@ public abstract class Record implements Comparable<MeasureRecord>
 	}
 	
 	@Override
-	public int compareTo(MeasureRecord o)
+	public int compareTo(Record o)
 	{
 		if(timeInSeconds < o.getTimeInSeconds()) return -1;
 		else if(timeInSeconds > o.getTimeInSeconds()) return 1;
