@@ -1,6 +1,6 @@
 #include <DHT.h>
 #include <EEPROM.h>
-#include <Time.h>
+#include <TimeLib.h>
 #include <LiquidCrystal.h>
 #include <Wire.h>
 #include "PCF8574.h"
@@ -54,7 +54,7 @@ void setupChars()
 
 void loop()
 {
-  while(now() < measureTime)
+  while (now() < measureTime)
   {
     checkForData();
     checkButton();
@@ -67,34 +67,34 @@ void loop()
 
 void checkForData()
 {
-  if(Serial.available() > 0)
+  if (Serial.available() > 0)
   {
     int message = Serial.read();
-    switch(message)
+    switch (message)
     {
-    case MESSAGE_SET_TIME:
-      updateTime();
-      break;
-    case MESSAGE_SAVE_TIME:
-      saveTime();
-      break;
-    case MESSAGE_GET_DATA:
-      sendData();
-      break;
-    case MESSAGE_RESET:
-      clearAll();
-      break;
+      case MESSAGE_SET_TIME:
+        updateTime();
+        break;
+      case MESSAGE_SAVE_TIME:
+        saveTime();
+        break;
+      case MESSAGE_GET_DATA:
+        sendData();
+        break;
+      case MESSAGE_RESET:
+        clearAll();
+        break;
     }
   }
 }
 
 void checkButton()
 {
-  if(digitalRead(PIN_BUTTON_LIGHT) == LOW)
+  if (digitalRead(PIN_BUTTON_LIGHT) == LOW)
   {
     lightEnabled = !lightEnabled;
     expander.digitalWrite(PIN_EXP_LIGHT, lightEnabled ? LOW : HIGH);
-    if(!lightEnabled)
+    if (!lightEnabled)
     {
       toggleLED(PIN_LED_RED, false);
       toggleLED(PIN_LED_GREEN, false);
@@ -106,13 +106,13 @@ void checkButton()
 
 void updateLCD()
 {
-  if(now() < lcdUpdateTime) return;
+  if (now() < lcdUpdateTime) return;
   lcdUpdateTime = now() + LCD_DELAY;
-  
+
   float temperature = (float) dht.readTemperature();
   float humidity = (float) dht.readHumidity();
   int rain = analogRead(PIN_RAIN);
-  
+
   lcd.clear();
   updateLCDDate();
   updateLCDWeather(temperature, humidity, rain);
@@ -155,53 +155,53 @@ void updateLCDWeather(float temp, float hum, int rainVal)
 void getRainChars(int rain, byte* chars)
 {
   int level = map(rain, 0, 1024, 11, 0);
-  if(level <= 5) chars[1] = RAIN_0_CHAR;
+  if (level <= 5) chars[1] = RAIN_0_CHAR;
   else chars[0] = RAIN_5_CHAR;
-  switch(level)
+  switch (level)
   {
-  case 0:
-    chars[0] = RAIN_0_CHAR;
-    break;
-  case 1:
-    chars[0] = RAIN_1_CHAR;
-    break;
-  case 2:
-    chars[0] = RAIN_2_CHAR;
-    break;
-  case 3:
-    chars[0] = RAIN_3_CHAR;
-    break;
-  case 4:
-    chars[0] = RAIN_4_CHAR;
-    break;
-  case 5:
-    chars[0] = RAIN_5_CHAR;
-    break;
-  case 6:
-    chars[1] = RAIN_0_CHAR;
-    break;
-  case 7:
-    chars[1] = RAIN_1_CHAR;
-    break;
-  case 8:
-    chars[1] = RAIN_2_CHAR;
-    break;
-  case 9:
-    chars[1] = RAIN_3_CHAR;
-    break;
-  case 10:
-    chars[1] = RAIN_4_CHAR;
-    break;
-  case 11:
-    chars[1] = RAIN_5_CHAR;
-    break;
+    case 0:
+      chars[0] = RAIN_0_CHAR;
+      break;
+    case 1:
+      chars[0] = RAIN_1_CHAR;
+      break;
+    case 2:
+      chars[0] = RAIN_2_CHAR;
+      break;
+    case 3:
+      chars[0] = RAIN_3_CHAR;
+      break;
+    case 4:
+      chars[0] = RAIN_4_CHAR;
+      break;
+    case 5:
+      chars[0] = RAIN_5_CHAR;
+      break;
+    case 6:
+      chars[1] = RAIN_0_CHAR;
+      break;
+    case 7:
+      chars[1] = RAIN_1_CHAR;
+      break;
+    case 8:
+      chars[1] = RAIN_2_CHAR;
+      break;
+    case 9:
+      chars[1] = RAIN_3_CHAR;
+      break;
+    case 10:
+      chars[1] = RAIN_4_CHAR;
+      break;
+    case 11:
+      chars[1] = RAIN_5_CHAR;
+      break;
   }
 }
 
 void toggleLED(int led, bool state)
 {
   int value = state ? LOW : HIGH;
-  if(state && !lightEnabled) return;
+  if (state && !lightEnabled) return;
   digitalWrite(led, value);
 }
 
@@ -214,7 +214,7 @@ void collectData()
   record.time = now();
   record.temperature = (int) (dht.readTemperature() * 10.0);
   record.humidity = (int) (dht.readHumidity() * 10.0);
-  record.rain = (byte) map(analogRead(PIN_RAIN), 0, 1024, 127, -128);
+  record.rain = (byte) map(analogRead(PIN_RAIN), 0, 1024, 100, 0);
 
   int length = getLength();
   int addr = length * sizeof(Record);
@@ -222,7 +222,7 @@ void collectData()
 
   int addrLength = EEPROM.length() - 2;
   int addrEmpty = EEPROM.length() - 3;
-  
+
   EEPROM.put(addrLength, ++length);
   EEPROM.update(addrEmpty, 0);
 
@@ -233,7 +233,7 @@ void collectData()
 void updateTime()
 {
   toggleLED(PIN_LED_RED, true);
-  while(Serial.available() < 4) delay(10);
+  while (Serial.available() < 4) delay(10);
   int first = Serial.read();
   int second = Serial.read();
   int third = Serial.read();
@@ -256,7 +256,7 @@ void sendData()
 {
   int length = getLength();
   Serial.write((byte) length);
-  for(int i = 0; i < length; i++)
+  for (int i = 0; i < length; i++)
   {
     int addr = i * sizeof(Record);
     Record record;
@@ -268,18 +268,20 @@ void sendData()
     longToBytes(record.time, time);
     longToBytes((long) record.temperature, temperature);
     longToBytes((long) record.humidity, humidity);
-    
+
     Serial.write(time, 4);
     Serial.write(temperature, 4);
     Serial.write(humidity, 4);
-    Serial.write(record.rain);
+    //Serial.write(record.rain);
+    if(record.rain < 10) Serial.write(record.rain);
+    else Serial.write(map(record.rain, 127, 255, 0, 100));
   }
 }
 
 void clearAll()
 {
   toggleLED(PIN_LED_BLUE, true);
-  for(int i = 0; i < EEPROM.length(); i++) EEPROM.update(i, 255);
+  for (int i = 0; i < EEPROM.length(); i++) EEPROM.update(i, 255);
   toggleLED(PIN_LED_BLUE, false);
 }
 
@@ -287,20 +289,20 @@ int getLength()
 {
   int addrLength = EEPROM.length() - 2;
   int addrEmpty = EEPROM.length() - 3;
-  
+
   int length;
   EEPROM.get(addrLength, length);
-  if(EEPROM.read(addrEmpty) == 255) length = 0;
-  
+  if (EEPROM.read(addrEmpty) == 255) length = 0;
+
   return length;
 }
 
 unsigned long bytesToLong(int first, int second, int third, int fourth)
 {
   return ((unsigned long) first         & 0xff) |
-        (((unsigned long) second << 8 ) & 0xff00) |
-        (((unsigned long) third  << 16) & 0xff0000) |
-        (((unsigned long) fourth << 24) & 0xff000000);      
+         (((unsigned long) second << 8 ) & 0xff00) |
+         (((unsigned long) third  << 16) & 0xff0000) |
+         (((unsigned long) fourth << 24) & 0xff000000);
 }
 
 void longToBytes(unsigned long number, byte* bytes)

@@ -8,8 +8,7 @@ import pl.karol202.weather.ui.table.editor.IntegerCellEditor;
 import pl.karol202.weather.ui.table.model.ForecastRecordsTableModel;
 import pl.karol202.weather.ui.table.renderer.DateCellRenderer;
 import pl.karol202.weather.ui.table.renderer.ForecastSourceCellRenderer;
-import pl.karol202.weather.ui.table.renderer.HumidityCellRenderer;
-import pl.karol202.weather.ui.table.renderer.TemperatureCellRenderer;
+import pl.karol202.weather.ui.table.renderer.UnitCellRenderer;
 
 import javax.swing.*;
 import javax.swing.JOptionPane;
@@ -68,13 +67,7 @@ public class ForecastTab
 		forecastTableModel = new ForecastRecordsTableModel();
 		forecastTableModel.addListener(() -> parent.updateGraph());
 		
-		buttonAddRecord.addActionListener(e -> {
-			int now = (int) (new Date().getTime() / 1000);
-			RecordsManager.getForecastRecords().add(new ForecastRecord(now, now, -1, 0, 0));
-			RecordsManager.save();
-			forecastTableModel.fireTableDataChanged();
-			parent.updateGraph();
-		});
+		buttonAddRecord.addActionListener(e -> newRecord());
 		
 		tableForecast.setModel(forecastTableModel);
 		tableForecast.setRowSelectionAllowed(true);
@@ -89,11 +82,16 @@ public class ForecastTab
 		TableColumn temperatureColumn = tableForecast.getColumnModel().getColumn(3);
 		temperatureColumn.setMaxWidth(100);
 		temperatureColumn.setCellEditor(new IntegerCellEditor(-128, 127));
-		temperatureColumn.setCellRenderer(new TemperatureCellRenderer());
+		temperatureColumn.setCellRenderer(new UnitCellRenderer("°C"));
 		TableColumn humidityColumn = tableForecast.getColumnModel().getColumn(4);
 		humidityColumn.setMaxWidth(80);
 		humidityColumn.setCellEditor(new IntegerCellEditor(0, 100));
-		humidityColumn.setCellRenderer(new HumidityCellRenderer());
+		humidityColumn.setCellRenderer(new UnitCellRenderer("%"));
+		TableColumn rainColumn = tableForecast.getColumnModel().getColumn(5);
+		rainColumn.setMinWidth(100);
+		rainColumn.setMaxWidth(100);
+		rainColumn.setCellEditor(new IntegerCellEditor(0, 100));
+		rainColumn.setCellRenderer(new UnitCellRenderer("%"));
 		tableForecast.addKeyListener(new KeyListener());
 		
 		comboBoxSources.addItemListener(e -> updateSourceFilter());
@@ -139,6 +137,15 @@ public class ForecastTab
 		
 		forecastTableModel.setCurrentSourceFilter(currentSourceFilter);
 		forecastTableModel.fireTableDataChanged();
+	}
+	
+	private void newRecord()
+	{
+		int now = (int) (new Date().getTime() / 1000);
+		RecordsManager.getForecastRecords().add(new ForecastRecord(now, now, -1, 0, 0, 0));
+		RecordsManager.save();
+		forecastTableModel.fireTableDataChanged();
+		parent.updateGraph();
 	}
 	
 	private enum SourceAddDialogOptions

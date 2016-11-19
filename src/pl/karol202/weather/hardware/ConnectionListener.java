@@ -1,6 +1,6 @@
 package pl.karol202.weather.hardware;
 
-import pl.karol202.weather.record.Record;
+import pl.karol202.weather.record.MeasureRecord;
 
 import java.util.ArrayList;
 
@@ -12,5 +12,5 @@ public interface ConnectionListener
 	
 	void onDataReceiveTimeout();
 	
-	void onDataReceive(ArrayList<Record> records);
+	void onDataReceive(ArrayList<MeasureRecord> records);
 }

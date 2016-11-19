@@ -1,9 +1,11 @@
 package pl.karol202.weather.ui.table.model;
 
+import pl.karol202.weather.record.Record;
+
 import javax.swing.table.AbstractTableModel;
 import java.util.ArrayList;
 
-public abstract class RecordsTableModel<R> extends AbstractTableModel
+public abstract class RecordsTableModel<R extends Record> extends AbstractTableModel
 {
 	private String[] header;
 	private ArrayList<R> data;

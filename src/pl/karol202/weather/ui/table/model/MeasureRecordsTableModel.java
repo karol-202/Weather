@@ -1,13 +1,13 @@
 package pl.karol202.weather.ui.table.model;
 
-import pl.karol202.weather.record.Record;
+import pl.karol202.weather.record.MeasureRecord;
 import pl.karol202.weather.record.RecordsManager;
 
 import java.util.Date;
 
-public class MeasureRecordsTableModel extends RecordsTableModel<Record>
+public class MeasureRecordsTableModel extends RecordsTableModel<MeasureRecord>
 {
-	private static final String[] header = new String[] { "Czas", "Temperatura", "Wilgotność" };
+	private static final String[] header = new String[] { "Czas", "Temperatura", "Wilgotność", "Moc opadów"};
 	
 	public MeasureRecordsTableModel()
 	{
@@ -23,7 +23,7 @@ public class MeasureRecordsTableModel extends RecordsTableModel<Record>
 	@Override
 	public Object getValueAt(int rowIndex, int columnIndex)
 	{
-		Record record = getData().get(rowIndex);
+		MeasureRecord record = getData().get(rowIndex);
 		switch(columnIndex)
 		{
 		case 0:
@@ -33,6 +33,8 @@ public class MeasureRecordsTableModel extends RecordsTableModel<Record>
 			return record.getTemperature();
 		case 2:
 			return record.getHumidity();
+		case 3:
+			return record.getRainLevel();
 		}
 		return null;
 	}

@@ -17,7 +17,8 @@ public class ForecastRecordsTableModel extends RecordsTableModel<ForecastRecord>
 														  "Czas utworzenia rekordu",
 														  "Źródło",
 														  "Temperatura",
-														  "Wilgotność" };
+														  "Wilgotność",
+														  "Prawdop. deszczu"};
 	
 	private ArrayList<DataUpdateListener> listeners;
 	private int currentSourceFilter;
@@ -52,6 +53,8 @@ public class ForecastRecordsTableModel extends RecordsTableModel<ForecastRecord>
 			return record.getTemperature();
 		case 4:
 			return record.getHumidity();
+		case 5:
+			return record.getRainProbability();
 		}
 		return null;
 	}
@@ -79,6 +82,9 @@ public class ForecastRecordsTableModel extends RecordsTableModel<ForecastRecord>
 			break;
 		case 4:
 			record.setHumidity((float) (int) aValue);
+			break;
+		case 5:
+			record.setRainProbability((int) aValue);
 			break;
 		}
 		fireTableCellUpdated(rowIndex, columnIndex);

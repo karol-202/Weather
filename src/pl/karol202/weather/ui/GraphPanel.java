@@ -1,16 +1,17 @@
 package pl.karol202.weather.ui;
 
-import pl.karol202.weather.record.ForecastErrorRecord;
-import pl.karol202.weather.record.ForecastRecord;
-import pl.karol202.weather.record.Record;
-import pl.karol202.weather.record.RecordsManager;
+import pl.karol202.weather.record.*;
 
 import javax.swing.*;
 import java.awt.*;
 import java.awt.event.MouseAdapter;
 import java.awt.event.MouseEvent;
 import java.text.DateFormat;
-import java.util.*;
+import java.util.ArrayList;
+import java.util.Collections;
+import java.util.Date;
+import java.util.HashMap;
+import java.util.function.Function;
 
 public class GraphPanel extends JPanel
 {
@@ -18,18 +19,19 @@ public class GraphPanel extends JPanel
 	private final int SECONDS_IN_DAY = 60 * 60 * 24;
 	private final int MAX_HIGHLIGHT_DISTANCE = 20;
 	
-	private DateFormat formatter;
-	private boolean showMeasurement;
-	private boolean showForecast;
-	private boolean showForecastError;
-	private boolean showTemperature;
-	private boolean showHumidity;
+	private boolean showMeasurementTemperature;
+	private boolean showMeasurementHumidity;
+	private boolean showForecastTemperature;
+	private boolean showForecastHumidity;
+	private boolean showForecastErrorTemperature;
+	private boolean showForecastErrorHumidity;
 	private int daysVisible;
 	private int offsetPercent;
 	private int currentSourceFilter;
 	private int forecastCreationTimeFilter;
 	private boolean forecastCreationTimeFilterNewest;
 	
+	private DateFormat formatter;
 	private int firstRecordTime;
 	private int lastRecordTime;
 	private int lowestTemperature;
@@ -41,16 +43,17 @@ public class GraphPanel extends JPanel
 	private HashMap<Integer, ForecastRecord> newestForecastRecords;
 	private ArrayList<Record> highlightedRecords;
 	private int mouseX;
-	private ArrayList<Record> forecastErrorData;
+	private ArrayList<ForecastErrorRecord> forecastErrorData;
 	
 	public GraphPanel()
 	{
 		this.formatter = DateFormat.getDateTimeInstance();
-		this.showMeasurement = true;
-		this.showForecast = true;
-		this.showForecastError = false;
-		this.showTemperature = true;
-		this.showHumidity = true;
+		this.showMeasurementTemperature = true;
+		this.showMeasurementHumidity = true;
+		this.showForecastTemperature = true;
+		this.showForecastHumidity = true;
+		this.showForecastErrorTemperature = false;
+		this.showForecastErrorHumidity = false;
 		this.daysVisible = 1;
 		this.currentSourceFilter = -1;
 		this.forecastCreationTimeFilterNewest = true;
@@ -100,8 +103,10 @@ public class GraphPanel extends JPanel
 		g.setColor(Color.BLACK);
 		g.drawLine(MARGIN, MARGIN, MARGIN, getHeight() - MARGIN); //Left side
 		g.drawLine(getWidth() - MARGIN, MARGIN, getWidth() - MARGIN, getHeight() - MARGIN); //Right side
-		if(!showForecastError) g.drawLine(MARGIN, getHeight() - MARGIN, getWidth() - MARGIN, getHeight() - MARGIN); //Bottom side
-		else g.drawLine(MARGIN, getHeight() / 2, getWidth() - MARGIN, getHeight() / 2); //Center line
+		if(!isShowingForecastError())
+			g.drawLine(MARGIN, getHeight() - MARGIN, getWidth() - MARGIN, getHeight() - MARGIN); //Bottom side
+		else
+			g.drawLine(MARGIN, getHeight() / 2, getWidth() - MARGIN, getHeight() / 2); //Center line
 	}
 	
 	private void drawTexts(Graphics2D g)
@@ -118,13 +123,13 @@ public class GraphPanel extends JPanel
 		String endTemperatureText = Integer.toString(highestTemperature) + "°C";
 		g.drawString(startTemperatureText, MARGIN - (startTemperatureText.length() * 6), getHeight() - MARGIN + 2);
 		g.drawString(endTemperatureText, MARGIN - (endTemperatureText.length() * 6), MARGIN + 2);
-		if(showForecastError) g.drawString("0°C", MARGIN - 18, (getHeight() / 2) + 2);
+		if(showForecastErrorTemperature) g.drawString("0°C", MARGIN - 18, (getHeight() / 2) + 2);
 	}
 	
 	private void drawTextsHumidity(Graphics2D g)
 	{
 		g.setColor(Color.BLUE);
-		if(showForecastError)
+		if(showForecastErrorHumidity)
 		{
 			g.drawString("-100%", getWidth() - MARGIN, getHeight() - MARGIN + 2);
 			g.drawString("0%", getWidth() - MARGIN + 2, (getHeight() / 2) + 2);
@@ -158,24 +163,43 @@ public class GraphPanel extends JPanel
 	
 	private void drawData(Graphics2D g)
 	{
-		if(showForecastError) drawDataError(g);
-		else drawDataStandard(g);
+		if(RecordsManager.getMeasureRecords() != null) drawMeasurementRecords(g);
+		if(RecordsManager.getForecastRecords() != null) drawForecastRecords(g);
+		drawErrorData(g);
 	}
 	
-	private void drawDataError(Graphics2D g)
+	private void drawMeasurementRecords(Graphics2D g)
 	{
-		drawRecords(g, forecastErrorData, Color.RED, Color.BLUE);
+		if(showMeasurementTemperature)
+			drawValueFromList(g, RecordsManager.getMeasureRecords(),
+							  record -> mapYValue(lowestTemperature, highestTemperature, record.getTemperature()), Color.RED);
+		if(showMeasurementHumidity)
+			drawValueFromList(g, RecordsManager.getMeasureRecords(),
+							  record -> mapYValue(lowestHumidity, highestHumidity, record.getHumidity()), Color.BLUE);
 	}
 	
-	private void drawDataStandard(Graphics2D g)
+	private void drawForecastRecords(Graphics2D g)
 	{
-		if(showMeasurement && RecordsManager.getMeasureRecords() != null)
-			drawRecords(g, RecordsManager.getMeasureRecords(), Color.RED, Color.BLUE);
-		if(showForecast && RecordsManager.getForecastRecords() != null)
-			drawRecords(g, RecordsManager.getForecastRecords(), Color.ORANGE, SystemColor.CYAN);
+		if(showForecastTemperature)
+			drawValueFromList(g, RecordsManager.getForecastRecords(),
+					record -> mapYValue(lowestTemperature, highestTemperature, record.getTemperature()), Color.ORANGE);
+		if(showForecastHumidity)
+			drawValueFromList(g, RecordsManager.getForecastRecords(),
+					record -> mapYValue(lowestHumidity, highestHumidity, record.getHumidity()), Color.CYAN);
 	}
 	
-	private void drawRecords(Graphics2D g, ArrayList<? extends Record> records, Color colorTemperature, Color colorHumidity)
+	private void drawErrorData(Graphics2D g)
+	{
+		if(showForecastErrorTemperature)
+			drawValueFromList(g, forecastErrorData,
+					record -> mapYValue(lowestTemperature, highestTemperature, record.getTemperature()), Color.RED);
+		if(showForecastErrorHumidity)
+			drawValueFromList(g, forecastErrorData,
+					record -> mapYValue(lowestHumidity, highestHumidity, record.getHumidity()), Color.BLUE);
+	}
+	
+	private void drawValueFromList(Graphics2D g, ArrayList<? extends Record> records,
+	                               Function<Record, Float> yFunction, Color color)
 	{
 		Record lastRecord = null;
 		for(Record record : records)
@@ -184,21 +208,11 @@ public class GraphPanel extends JPanel
 			if(lastRecord != null)
 			{
 				int x = (int) map(firstVisibleTime, lastVisibleTime, MARGIN, getWidth() - MARGIN, record.getTimeInSeconds());
+				int y = Math.round(yFunction.apply(record));
 				int lastX = (int) map(firstVisibleTime, lastVisibleTime, MARGIN, getWidth() - MARGIN, lastRecord.getTimeInSeconds());
-				if(showTemperature)
-				{
-					int y = (int) map(lowestTemperature, highestTemperature, getHeight() - MARGIN, MARGIN, record.getTemperature());
-					int lastY = (int) map(lowestTemperature, highestTemperature, getHeight() - MARGIN, MARGIN, lastRecord.getTemperature());
-					g.setColor(colorTemperature);
-					g.drawLine(lastX, lastY, x, y);
-				}
-				if(showHumidity)
-				{
-					int y = (int) map(lowestHumidity, highestHumidity, getHeight() - MARGIN, MARGIN, record.getHumidity());
-					int lastY = (int) map(lowestHumidity, highestHumidity, getHeight() - MARGIN, MARGIN, lastRecord.getHumidity());
-					g.setColor(colorHumidity);
-					g.drawLine(lastX, lastY, x, y);
-				}
+				int lastY = Math.round(yFunction.apply(lastRecord));
+				g.setColor(color);
+				g.drawLine(lastX, lastY, x, y);
 			}
 			lastRecord = record;
 		}
@@ -207,6 +221,11 @@ public class GraphPanel extends JPanel
 	private float map(float srcMin, float srcMax, float dstMin, float dstMax, float value)
 	{
 		return (value - srcMin) / (srcMax - srcMin) * (dstMax - dstMin) + dstMin;
+	}
+	
+	private float mapYValue(float yMin, float yMax, float value)
+	{
+		return map(yMin, yMax, getHeight() - MARGIN, MARGIN, value);
 	}
 	
 	private void onMouseExited()
@@ -226,13 +245,15 @@ public class GraphPanel extends JPanel
 	private void updateHighlightedRecords(int mouseTime)
 	{
 		highlightedRecords.clear();
-		if(showForecastError)
-			for(Record record : forecastErrorData) checkRecord(mouseTime, record);
-		else
+		if(!isShowingForecastError())
 		{
-			if(showMeasurement) for(Record record : RecordsManager.getMeasureRecords()) checkRecord(mouseTime, record);
-			if(showForecast) for(Record record : RecordsManager.getForecastRecords()) checkRecord(mouseTime, record);
+			if(isShowingMeasurement())
+				for(Record record : RecordsManager.getMeasureRecords()) checkRecord(mouseTime, record);
+			if(isShowingForecast())
+				for(Record record : RecordsManager.getForecastRecords()) checkRecord(mouseTime, record);
 		}
+		else
+			for(Record record : forecastErrorData) checkRecord(mouseTime, record);
 		repaint();
 	}
 	
@@ -276,7 +297,7 @@ public class GraphPanel extends JPanel
 		firstRecordTime = getFirstRecordTime();
 		lastRecordTime = getLastRecordTime();
 		updateLowestAndHighestTemperature();
-		lowestHumidity = showForecastError ? -100 : 0;
+		lowestHumidity = isShowingForecastError() ? -100 : 0;
 		highestHumidity = 100;
 		firstVisibleTime = calcFirstVisibleTime();
 		lastVisibleTime = calcLastVisbleTime();
@@ -286,7 +307,7 @@ public class GraphPanel extends JPanel
 	
 	private void updateLowestAndHighestTemperature()
 	{
-		if(showForecastError)
+		if(isShowingForecastError())
 		{
 			lowestTemperature = getLowestTemperatureFromForecastErrors();
 			highestTemperature = getHighestTemperatureFromForecastErrors();
@@ -303,11 +324,11 @@ public class GraphPanel extends JPanel
 	
 	void updateData()
 	{
-		updateNewestRecords();
-		if(showForecastError) updateForecastErrorData();
+		updateNewestForecastRecords();
+		updateForecastErrorData();
 	}
 	
-	private void updateNewestRecords()
+	private void updateNewestForecastRecords()
 	{
 		newestForecastRecords.clear();
 		for(ForecastRecord record : RecordsManager.getForecastRecords())
@@ -340,7 +361,7 @@ public class GraphPanel extends JPanel
 			float humidityDiff = corresponding.getHumidity() - record.getHumidity();
 			if(invert) temperatureDiff = 0 - temperatureDiff;
 			if(invert) humidityDiff = 0 - humidityDiff;
-			Record error = new ForecastErrorRecord(record.getTimeInSeconds(), temperatureDiff, humidityDiff);
+			ForecastErrorRecord error = new ForecastErrorRecord(record.getTimeInSeconds(), temperatureDiff, humidityDiff);
 			forecastErrorData.add(error);
 		}
 	}
@@ -364,7 +385,7 @@ public class GraphPanel extends JPanel
 		float newHumidity = map(earlier.getTimeInSeconds(), later.getTimeInSeconds(),
 								earlier.getHumidity(), later.getHumidity(),
 								record.getTimeInSeconds());
-		return new Record(record.getTimeInSeconds(), Math.round(newTemperature), Math.round(newHumidity));
+		return new MeasureRecord(record.getTimeInSeconds(), Math.round(newTemperature), Math.round(newHumidity), 0);
 	}
 	
 	private Record findRecordWithSameTime(Record record, ArrayList<? extends Record> list)
@@ -378,9 +399,9 @@ public class GraphPanel extends JPanel
 	private int getFirstRecordTime()
 	{
 		Record first = null;
-		if(showMeasurement)
+		if(isShowingMeasurement() || isShowingForecastError())
 			first = getFirstRecordFromList(RecordsManager.getMeasureRecords());
-		if(showForecast)
+		if(isShowingForecast() || isShowingForecastError())
 		{
 			Record firstFromForecastRecords = getFirstRecordFromList(RecordsManager.getForecastRecords());
 			if(isRecordEarlier(firstFromForecastRecords, first))
@@ -410,9 +431,9 @@ public class GraphPanel extends JPanel
 	private int getLastRecordTime()
 	{
 		Record last = null;
-		if(showMeasurement)
+		if(isShowingMeasurement() || isShowingForecastError())
 			last = getLastRecordFromList(RecordsManager.getMeasureRecords());
-		if(showForecast)
+		if(isShowingForecast() || isShowingForecastError())
 		{
 			Record lastFromForecastRecords = getLastRecordFromList(RecordsManager.getForecastRecords());
 			if(isRecordLater(lastFromForecastRecords, last))
@@ -442,9 +463,9 @@ public class GraphPanel extends JPanel
 	private int getLowestTemperature()
 	{
 		Record lowest = null;
-		if(showMeasurement)
+		if(isShowingMeasurement())
 			lowest = getRecordWithLowestTemperaure(RecordsManager.getMeasureRecords());
-		if(showForecast)
+		if(isShowingForecast())
 		{
 			Record lowestFromForecastRecords = getRecordWithLowestTemperaure(RecordsManager.getForecastRecords());
 			if(hasRecordLowerTemperature(lowestFromForecastRecords, lowest))
@@ -475,9 +496,9 @@ public class GraphPanel extends JPanel
 	private int getHighestTemperature()
 	{
 		Record highest = null;
-		if(showMeasurement)
+		if(isShowingMeasurement())
 			highest = getRecordWithHighestTemperature(RecordsManager.getMeasureRecords());
-		if(showForecast)
+		if(isShowingForecast())
 		{
 			Record highestFromForecastRecords = getRecordWithHighestTemperature(RecordsManager.getForecastRecords());
 			if(hasRecordHigherTemperature(highestFromForecastRecords, highest))
@@ -535,29 +556,49 @@ public class GraphPanel extends JPanel
 		return Math.round((float) daysVisible / ((lastRecordTime - firstRecordTime) / SECONDS_IN_DAY) * 100);
 	}
 	
-	void setShowMeasurement(boolean showMeasurement)
+	private boolean isShowingMeasurement()
 	{
-		this.showMeasurement = showMeasurement;
+		return showMeasurementTemperature || showMeasurementHumidity;
 	}
 	
-	void setShowForecast(boolean showForecast)
+	private boolean isShowingForecast()
 	{
-		this.showForecast = showForecast;
+		return showForecastTemperature || showForecastHumidity;
 	}
 	
-	void setShowForecastError(boolean showForecastError)
+	private boolean isShowingForecastError()
 	{
-		this.showForecastError = showForecastError;
+		return showForecastErrorTemperature || showForecastErrorHumidity;
 	}
 	
-	void setShowTemperature(boolean showTemperature)
+	void setShowMeasurementTemperature(boolean show)
 	{
-		this.showTemperature = showTemperature;
+		this.showMeasurementTemperature = show;
 	}
 	
-	void setShowHumidity(boolean showHumidity)
+	void setShowMeasurementHumidity(boolean show)
 	{
-		this.showHumidity = showHumidity;
+		this.showMeasurementHumidity = show;
+	}
+	
+	void setShowForecastTemperature(boolean show)
+	{
+		this.showForecastTemperature = show;
+	}
+	
+	void setShowForecastHumidity(boolean show)
+	{
+		this.showForecastHumidity = show;
+	}
+	
+	void setShowForecastErrorTemperature(boolean show)
+	{
+		this.showForecastErrorTemperature = show;
+	}
+	
+	void setShowForecastErrorHumidity(boolean show)
+	{
+		this.showForecastErrorHumidity = show;
 	}
 	
 	void setDaysVisible(int daysVisible)

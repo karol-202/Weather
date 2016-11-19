@@ -1,7 +1,7 @@
 package pl.karol202.weather.hardware;
 
 import gnu.io.*;
-import pl.karol202.weather.record.Record;
+import pl.karol202.weather.record.MeasureRecord;
 
 import java.io.IOException;
 import java.io.InputStream;
@@ -39,7 +39,7 @@ public class WeatherStation implements SerialPortEventListener
 	}
 	
 	public static final int MEMORY_SPACE_FOR_RECORDS = 1024 - 7;
-	public static final int MEMORY_RECORD_SIZE = 8;
+	public static final int MEMORY_RECORD_SIZE = 9;
 	
 	private final int TIMEOUT = 2000;
 	private final int BAUD_RATE = 9600;
@@ -210,18 +210,18 @@ public class WeatherStation implements SerialPortEventListener
 	private void collectData() throws IOException
 	{
 		waitForData = false;
-		ArrayList<Record> records = new ArrayList<>();
+		ArrayList<MeasureRecord> records = new ArrayList<>();
 		int length = inputStream.read();
 		for(int i = 0; i < length; i++) readRecord(records);
 		listener.onDataReceive(records);
 	}
 	
-	private void readRecord(ArrayList<Record> records) throws IOException
+	private void readRecord(ArrayList<MeasureRecord> records) throws IOException
 	{
 		int time = DataUtils.readInt(inputStream);
 		float temperature = DataUtils.readInt(inputStream) / 10f;
 		float humidity = DataUtils.readInt(inputStream) / 10f;
 		int rain = inputStream.read();
-		records.add(new Record(time, temperature, humidity));
+		records.add(new MeasureRecord(time, temperature, humidity, rain));
 	}
 }

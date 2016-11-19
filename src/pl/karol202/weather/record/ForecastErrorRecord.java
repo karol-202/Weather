@@ -1,10 +1,10 @@
 package pl.karol202.weather.record;
 
-public class ForecastErrorRecord extends Record
+public class ForecastErrorRecord extends MeasureRecord
 {
 	public ForecastErrorRecord(int timeInSeconds, float temperature, float humidity)
 	{
-		super(timeInSeconds, temperature, humidity);
+		super(timeInSeconds, temperature, humidity, 0);
 	}
 	
 	@Override

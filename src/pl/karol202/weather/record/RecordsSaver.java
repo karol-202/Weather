@@ -32,14 +32,15 @@ public class RecordsSaver
 		}
 	}
 	
-	private static void saveMeasureRecords(ArrayList<Record> records) throws IOException
+	private static void saveMeasureRecords(ArrayList<MeasureRecord> records) throws IOException
 	{
 		outputStream.write(DataUtils.intToBytes(records.size()));
-		for(Record record : records)
+		for(MeasureRecord record : records)
 		{
 			outputStream.write(DataUtils.intToBytes(record.getTimeInSeconds()));
 			outputStream.write(DataUtils.intToBytes((int) (record.getTemperature() * 10)));
 			outputStream.write(DataUtils.intToBytes((int) (record.getHumidity() * 10)));
+			outputStream.write(record.getRainLevel());
 		}
 	}
 	
@@ -53,6 +54,7 @@ public class RecordsSaver
 			outputStream.write(record.getForecastSource());
 			outputStream.write(DataUtils.intToBytes((int) (record.getTemperature() * 10)));
 			outputStream.write(DataUtils.intToBytes((int) (record.getHumidity() * 10)));
+			outputStream.write(record.getRainProbability());
 		}
 	}
 	

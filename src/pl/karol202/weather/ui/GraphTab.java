@@ -16,28 +16,30 @@ public class GraphTab
 	private GraphPanel graph;
 	private JScrollBar scrollBarOffset;
 	private JSpinner spinnerScale;
-	private JCheckBox checkBoxMeasure;
-	private JCheckBox checkBoxForecast;
-	private JCheckBox checkBoxError;
-	private JCheckBox checkBoxTemperature;
-	private JCheckBox checkBoxHumidity;
+	private JCheckBox checkBoxMeasurementTemperature;
+	private JCheckBox checkBoxMeasurementHumidity;
+	private JCheckBox checkBoxForecastTemperature;
+	private JCheckBox checkBoxForecastHumidity;
+	private JCheckBox checkBoxErrorTemperature;
+	private JCheckBox checkBoxErrorHumidity;
 	private JComboBox<String> comboBoxSource;
 	private JFormattedTextField ftfForecastCreationTime;
 	private JRadioButton radioFilterManual;
 	private JRadioButton radioFilterNewest;
 	
-	public void init()
+	void init()
 	{
 		spinnerModelNumber = new SpinnerNumberModel(5, 1, 100, 1);
 		dateFormatter = new DateFormatter(DateFormat.getDateTimeInstance());
 		
 		scrollBarOffset.addAdjustmentListener(e -> updateGraph(false));
 		
-		checkBoxMeasure.addActionListener(e -> updateGraph(true));
-		checkBoxForecast.addActionListener(e -> toggleForecast(checkBoxForecast.isSelected()));
-		checkBoxTemperature.addActionListener(e -> updateGraph(false));
-		checkBoxHumidity.addActionListener(e -> updateGraph(false));
-		checkBoxError.addActionListener(e -> toggleForecastError(checkBoxError.isSelected()));
+		checkBoxMeasurementTemperature.addActionListener(e -> updateGraph(false));
+		checkBoxMeasurementHumidity.addActionListener(e -> updateGraph(false));
+		checkBoxForecastTemperature.addActionListener(e -> updateGraph(false));
+		checkBoxForecastHumidity.addActionListener(e -> updateGraph(false));
+		checkBoxErrorTemperature.addActionListener(e -> toggleForecastError());
+		checkBoxErrorHumidity.addActionListener(e -> toggleForecastError());
 		spinnerScale.setModel(spinnerModelNumber);
 		spinnerScale.addChangeListener(e -> updateGraph(false));
 		
@@ -67,11 +69,12 @@ public class GraphTab
 	
 	private void updateGraph(boolean updateData)
 	{
-		graph.setShowMeasurement(checkBoxMeasure.isSelected());
-		graph.setShowForecast(checkBoxForecast.isSelected());
-		graph.setShowForecastError(checkBoxError.isSelected());
-		graph.setShowTemperature(checkBoxTemperature.isSelected());
-		graph.setShowHumidity(checkBoxHumidity.isSelected());
+		graph.setShowMeasurementTemperature(checkBoxMeasurementTemperature.isSelected());
+		graph.setShowMeasurementHumidity(checkBoxMeasurementHumidity.isSelected());
+		graph.setShowForecastTemperature(checkBoxForecastTemperature.isSelected());
+		graph.setShowForecastHumidity(checkBoxForecastHumidity.isSelected());
+		graph.setShowForecastErrorTemperature(checkBoxErrorTemperature.isSelected());
+		graph.setShowForecastErrorHumidity(checkBoxErrorHumidity.isSelected());
 		graph.setDaysVisible((int) spinnerScale.getValue());
 		graph.setOffsetPercent(calcGraphOffset());
 		graph.setCurrentSourceFilter(comboBoxSource.getSelectedIndex());
@@ -105,15 +108,6 @@ public class GraphTab
 			scrollBarOffset.setValue(scrollBarOffset.getMaximum() - timeRatio);
 	}
 	
-	private void toggleForecast(boolean enabled)
-	{
-		comboBoxSource.setEnabled(enabled);
-		radioFilterManual.setEnabled(enabled);
-		radioFilterNewest.setEnabled(enabled);
-		
-		updateForecastCreationFilter();
-	}
-	
 	private void updateForecastCreationFilter()
 	{
 		ftfForecastCreationTime.setEnabled(radioFilterManual.isSelected());
@@ -121,18 +115,19 @@ public class GraphTab
 		updateGraph(true);
 	}
 	
-	private void toggleForecastError(boolean show)
+	private void toggleForecastError()
 	{
-		if(show)
-		{
-			checkBoxMeasure.setSelected(true);
-			checkBoxForecast.setSelected(true);
-			toggleForecast(true);
-		}
-		checkBoxMeasure.setEnabled(!show);
-		checkBoxForecast.setEnabled(!show);
+		boolean show = checkBoxErrorTemperature.isSelected() || checkBoxErrorHumidity.isSelected();
+		checkBoxMeasurementTemperature.setSelected(!show);
+		checkBoxMeasurementHumidity.setSelected(!show);
+		checkBoxForecastTemperature.setSelected(!show);
+		checkBoxForecastHumidity.setSelected(!show);
+		checkBoxMeasurementTemperature.setEnabled(!show);
+		checkBoxMeasurementHumidity.setEnabled(!show);
+		checkBoxForecastTemperature.setEnabled(!show);
+		checkBoxForecastHumidity.setEnabled(!show);
 		
-		updateGraph(true);
+		updateGraph(false);
 	}
 	
 	public void setGraph(GraphPanel graph)
@@ -150,29 +145,34 @@ public class GraphTab
 		this.spinnerScale = spinnerScale;
 	}
 	
-	public void setCheckBoxMeasure(JCheckBox checkBoxMeasure)
+	public void setCheckBoxMeasurementTemperature(JCheckBox checkBox)
 	{
-		this.checkBoxMeasure = checkBoxMeasure;
+		this.checkBoxMeasurementTemperature = checkBox;
 	}
 	
-	public void setCheckBoxForecast(JCheckBox checkBoxForecast)
+	public void setCheckBoxMeasurementHumidity(JCheckBox checkBox)
 	{
-		this.checkBoxForecast = checkBoxForecast;
+		this.checkBoxMeasurementHumidity = checkBox;
 	}
 	
-	public void setCheckBoxError(JCheckBox checkBoxError)
+	public void setCheckBoxForecastTemperature(JCheckBox checkBox)
 	{
-		this.checkBoxError = checkBoxError;
+		this.checkBoxForecastTemperature = checkBox;
 	}
 	
-	public void setCheckBoxTemperature(JCheckBox checkBoxTemperature)
+	public void setCheckBoxForecastHumidity(JCheckBox checkBox)
 	{
-		this.checkBoxTemperature = checkBoxTemperature;
+		this.checkBoxForecastHumidity = checkBox;
 	}
 	
-	public void setCheckBoxHumidity(JCheckBox checkBoxHumidity)
+	public void setCheckBoxErrorTemperature(JCheckBox checkBox)
 	{
-		this.checkBoxHumidity = checkBoxHumidity;
+		this.checkBoxErrorTemperature = checkBox;
+	}
+	
+	public void setCheckBoxErrorHumidity(JCheckBox checkBox)
+	{
+		this.checkBoxErrorHumidity = checkBox;
 	}
 	
 	public void setComboBoxSource(JComboBox<String> comboBoxSource)

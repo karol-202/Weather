@@ -33,8 +33,8 @@ public class FormMain extends JFrame
 	private JScrollBar scrollBarOffset;
 	private JCheckBox checkBoxMeasure;
 	private JCheckBox checkBoxForecast;
-	private JCheckBox checkBoxTemperature;
-	private JCheckBox checkBoxHumidity;
+	private JCheckBox checkBoxMeasurementTemperature;
+	private JCheckBox checkBoxMeasurementHumidity;
 	private JSpinner spinnerScale;
 	private JComboBox<String> comboBoxSourceGraph;
 	private JFormattedTextField ftfForecastCreationTime;
@@ -42,15 +42,19 @@ public class FormMain extends JFrame
 	private JRadioButton radioFilterNewest;
 	private JCheckBox checkBoxError;
 	private JSpinner spinnerTimeZone;
+	private JCheckBox checkBoxForecastTemperature;
+	private JCheckBox checkBoxForecastHumidity;
+	private JCheckBox checkBoxErrorTemperature;
+	private JCheckBox checkBoxErrorHumidity;
 	
-	public FormMain()
+	private FormMain()
 	{
 		super("Weather");
 		setContentPane(root);
 		pack();
 		setDefaultCloseOperation(WindowConstants.EXIT_ON_CLOSE);
 		setLocation(500, 200);
-		setResizable(false);
+		setResizable(true);
 		setVisible(true);
 		
 		RecordsManager.init();
@@ -98,11 +102,12 @@ public class FormMain extends JFrame
 		graphTab.setGraph(graph);
 		graphTab.setScrollBarOffset(scrollBarOffset);
 		graphTab.setSpinnerScale(spinnerScale);
-		graphTab.setCheckBoxMeasure(checkBoxMeasure);
-		graphTab.setCheckBoxForecast(checkBoxForecast);
-		graphTab.setCheckBoxError(checkBoxError);
-		graphTab.setCheckBoxTemperature(checkBoxTemperature);
-		graphTab.setCheckBoxHumidity(checkBoxHumidity);
+		graphTab.setCheckBoxMeasurementTemperature(checkBoxMeasurementTemperature);
+		graphTab.setCheckBoxMeasurementHumidity(checkBoxMeasurementHumidity);
+		graphTab.setCheckBoxForecastTemperature(checkBoxForecastTemperature);
+		graphTab.setCheckBoxForecastHumidity(checkBoxForecastHumidity);
+		graphTab.setCheckBoxErrorTemperature(checkBoxErrorTemperature);
+		graphTab.setCheckBoxErrorHumidity(checkBoxErrorHumidity);
 		graphTab.setComboBoxSource(comboBoxSourceGraph);
 		graphTab.setFtfForecastCreationTime(ftfForecastCreationTime);
 		graphTab.setRadioFilterManual(radioFilterManual);

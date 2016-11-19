@@ -28,7 +28,7 @@ public class RecordsLoader
 		}
 	}
 	
-	private static void loadMeasureRecords(ArrayList<Record> records) throws IOException
+	private static void loadMeasureRecords(ArrayList<MeasureRecord> records) throws IOException
 	{
 		records.clear();
 		int length = DataUtils.readInt(inputStream);
@@ -37,7 +37,8 @@ public class RecordsLoader
 			int time = DataUtils.readInt(inputStream);
 			float temperature = DataUtils.readInt(inputStream) / 10f;
 			float humidity = DataUtils.readInt(inputStream) / 10f;
-			records.add(new Record(time, temperature, humidity));
+			int rain = readByte();
+			records.add(new MeasureRecord(time, temperature, humidity, rain));
 		}
 	}
 	
@@ -52,7 +53,8 @@ public class RecordsLoader
 			int forecastSource = readByte();
 			float temperature = DataUtils.readInt(inputStream) / 10f;
 			float humidity = DataUtils.readInt(inputStream) / 10f;
-			records.add(new ForecastRecord(time, creationTime, forecastSource, temperature, humidity));
+			int rain = readByte();
+			records.add(new ForecastRecord(time, creationTime, forecastSource, temperature, humidity, rain));
 		}
 	}
 	

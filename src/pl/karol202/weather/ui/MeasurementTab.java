@@ -3,12 +3,11 @@ package pl.karol202.weather.ui;
 import pl.karol202.weather.hardware.ConnectionListener;
 import pl.karol202.weather.hardware.PortsManager;
 import pl.karol202.weather.hardware.WeatherStation;
-import pl.karol202.weather.record.Record;
+import pl.karol202.weather.record.MeasureRecord;
 import pl.karol202.weather.record.RecordsManager;
 import pl.karol202.weather.ui.table.model.MeasureRecordsTableModel;
 import pl.karol202.weather.ui.table.renderer.DateCellRenderer;
-import pl.karol202.weather.ui.table.renderer.HumidityCellRenderer;
-import pl.karol202.weather.ui.table.renderer.TemperatureCellRenderer;
+import pl.karol202.weather.ui.table.renderer.UnitCellRenderer;
 
 import javax.swing.*;
 import java.awt.event.KeyEvent;
@@ -51,9 +50,11 @@ public class MeasurementTab implements ConnectionListener
 		tableMeasurement.getTableHeader().setReorderingAllowed(false);
 		tableMeasurement.setDefaultRenderer(Date.class, new DateCellRenderer());
 		tableMeasurement.getColumnModel().getColumn(1).setMaxWidth(100);
-		tableMeasurement.getColumnModel().getColumn(1).setCellRenderer(new TemperatureCellRenderer());
+		tableMeasurement.getColumnModel().getColumn(1).setCellRenderer(new UnitCellRenderer("°C"));
 		tableMeasurement.getColumnModel().getColumn(2).setMaxWidth(80);
-		tableMeasurement.getColumnModel().getColumn(2).setCellRenderer(new HumidityCellRenderer());
+		tableMeasurement.getColumnModel().getColumn(2).setCellRenderer(new UnitCellRenderer("%"));
+		tableMeasurement.getColumnModel().getColumn(3).setMaxWidth(100);
+		tableMeasurement.getColumnModel().getColumn(3).setCellRenderer(new UnitCellRenderer("%"));
 		tableMeasurement.addKeyListener(new KeyListener()
 		{
 			@Override
@@ -183,9 +184,9 @@ public class MeasurementTab implements ConnectionListener
 	}
 	
 	@Override
-	public void onDataReceive(ArrayList<Record> newRecords)
+	public void onDataReceive(ArrayList<MeasureRecord> newRecords)
 	{
-		ArrayList<Record> records = RecordsManager.getMeasureRecords();
+		ArrayList<MeasureRecord> records = RecordsManager.getMeasureRecords();
 		newRecords.forEach(newRec ->
 		{
 			if(!records.contains(newRec)) records.add(newRec);

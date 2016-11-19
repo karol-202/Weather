@@ -6,7 +6,7 @@ import java.util.ArrayList;
 
 public class RecordsManager
 {
-	private static ArrayList<Record> measureRecords;
+	private static ArrayList<MeasureRecord> measureRecords;
 	private static ArrayList<ForecastRecord> forecastRecords;
 	private static ArrayList<String> forecastSources;
 	private static float timeZone;
@@ -39,7 +39,7 @@ public class RecordsManager
 		RecordsSaver.save(file);
 	}
 	
-	public static ArrayList<Record> getMeasureRecords()
+	public static ArrayList<MeasureRecord> getMeasureRecords()
 	{
 		return measureRecords;
 	}

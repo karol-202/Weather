@@ -6,13 +6,15 @@ import javax.swing.text.SimpleAttributeSet;
 import javax.swing.text.StyleConstants;
 import java.awt.*;
 
-public abstract class AdvancedCellRenderer extends JTextPane implements TableCellRenderer
+public class UnitCellRenderer extends JTextPane implements TableCellRenderer
 {
 	private Color unselectedBackground;
+	private String unit;
 	
-	AdvancedCellRenderer()
+	public UnitCellRenderer(String unit)
 	{
-		unselectedBackground = getBackground();
+		this.unselectedBackground = getBackground();
+		this.unit = unit;
 		
 		SimpleAttributeSet paragraphAttributes = new SimpleAttributeSet();
 		StyleConstants.setAlignment(paragraphAttributes, StyleConstants.ALIGN_RIGHT);
@@ -25,10 +27,14 @@ public abstract class AdvancedCellRenderer extends JTextPane implements TableCel
 		if(isSelected) setBackground(table.getSelectionBackground());
 		else setBackground(unselectedBackground);
 		
+		setText("");
+		appendColoredText(value.toString(), !isSelected ? Color.BLACK : Color.WHITE);
+		appendColoredText(unit, !isSelected ? Color.GRAY : Color.WHITE);
+		
 		return this;
 	}
 	
-	void appendColoredText(String text, Color color)
+	private void appendColoredText(String text, Color color)
 	{
 		SimpleAttributeSet set = new SimpleAttributeSet();
 		StyleConstants.setForeground(set, color);
