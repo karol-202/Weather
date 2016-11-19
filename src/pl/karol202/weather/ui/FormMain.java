@@ -31,8 +31,6 @@ public class FormMain extends JFrame
 	
 	private GraphPanel graph;
 	private JScrollBar scrollBarOffset;
-	private JCheckBox checkBoxMeasure;
-	private JCheckBox checkBoxForecast;
 	private JCheckBox checkBoxMeasurementTemperature;
 	private JCheckBox checkBoxMeasurementHumidity;
 	private JSpinner spinnerScale;
@@ -40,12 +38,13 @@ public class FormMain extends JFrame
 	private JFormattedTextField ftfForecastCreationTime;
 	private JRadioButton radioFilterManual;
 	private JRadioButton radioFilterNewest;
-	private JCheckBox checkBoxError;
 	private JSpinner spinnerTimeZone;
 	private JCheckBox checkBoxForecastTemperature;
 	private JCheckBox checkBoxForecastHumidity;
 	private JCheckBox checkBoxErrorTemperature;
 	private JCheckBox checkBoxErrorHumidity;
+	private JCheckBox checkBoxMeasurementRain;
+	private JCheckBox checkBoxForecastRain;
 	
 	private FormMain()
 	{
@@ -104,8 +103,10 @@ public class FormMain extends JFrame
 		graphTab.setSpinnerScale(spinnerScale);
 		graphTab.setCheckBoxMeasurementTemperature(checkBoxMeasurementTemperature);
 		graphTab.setCheckBoxMeasurementHumidity(checkBoxMeasurementHumidity);
+		graphTab.setCheckBoxMeasurementRain(checkBoxMeasurementRain);
 		graphTab.setCheckBoxForecastTemperature(checkBoxForecastTemperature);
 		graphTab.setCheckBoxForecastHumidity(checkBoxForecastHumidity);
+		graphTab.setCheckBoxForecastRain(checkBoxForecastRain);
 		graphTab.setCheckBoxErrorTemperature(checkBoxErrorTemperature);
 		graphTab.setCheckBoxErrorHumidity(checkBoxErrorHumidity);
 		graphTab.setComboBoxSource(comboBoxSourceGraph);

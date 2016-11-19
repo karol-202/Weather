@@ -22,8 +22,10 @@ public class GraphPanel extends JPanel
 	
 	private boolean showMeasurementTemperature;
 	private boolean showMeasurementHumidity;
+	private boolean showMeasurementRain;
 	private boolean showForecastTemperature;
 	private boolean showForecastHumidity;
+	private boolean showForecastRain;
 	private boolean showForecastErrorTemperature;
 	private boolean showForecastErrorHumidity;
 	private int daysVisible;
@@ -51,8 +53,10 @@ public class GraphPanel extends JPanel
 		this.formatter = DateFormat.getDateTimeInstance();
 		this.showMeasurementTemperature = true;
 		this.showMeasurementHumidity = true;
+		this.showMeasurementRain = true;
 		this.showForecastTemperature = true;
 		this.showForecastHumidity = true;
+		this.showForecastRain = true;
 		this.showForecastErrorTemperature = false;
 		this.showForecastErrorHumidity = false;
 		this.daysVisible = 1;
@@ -172,35 +176,43 @@ public class GraphPanel extends JPanel
 	private void drawMeasurementRecords(Graphics2D g)
 	{
 		if(showMeasurementTemperature)
-			drawValueFromList(g, RecordsManager.getMeasureRecords(),
-							  record -> mapYValue(lowestTemperature, highestTemperature, record.getTemperature()), Color.RED);
+			drawValueAsLine(g, RecordsManager.getMeasureRecords(),
+							record -> mapYValue(lowestTemperature, highestTemperature, record.getTemperature()), Color.RED);
 		if(showMeasurementHumidity)
-			drawValueFromList(g, RecordsManager.getMeasureRecords(),
-							  record -> mapYValue(lowestHumidity, highestHumidity, record.getHumidity()), Color.BLUE);
+			drawValueAsLine(g, RecordsManager.getMeasureRecords(),
+							record -> mapYValue(lowestHumidity, highestHumidity, record.getHumidity()), Color.BLUE);
+		if(showMeasurementRain)
+			drawValueAsFill(g, RecordsManager.getMeasureRecords(),
+							record -> map(0, 100, MARGIN, getHeight() - MARGIN, ((MeasureRecord) record).getRainLevel()),
+							new Color(96, 192, 255, 192));
 	}
 	
 	private void drawForecastRecords(Graphics2D g)
 	{
 		if(showForecastTemperature)
-			drawValueFromList(g, RecordsManager.getForecastRecords(),
-					record -> mapYValue(lowestTemperature, highestTemperature, record.getTemperature()), Color.ORANGE);
+			drawValueAsLine(g, RecordsManager.getForecastRecords(),
+							record -> mapYValue(lowestTemperature, highestTemperature, record.getTemperature()), Color.ORANGE);
 		if(showForecastHumidity)
-			drawValueFromList(g, RecordsManager.getForecastRecords(),
-					record -> mapYValue(lowestHumidity, highestHumidity, record.getHumidity()), Color.CYAN);
+			drawValueAsLine(g, RecordsManager.getForecastRecords(),
+							record -> mapYValue(lowestHumidity, highestHumidity, record.getHumidity()), Color.CYAN);
+		if(showForecastRain)
+			drawValueAsFill(g, RecordsManager.getForecastRecords(),
+							record -> map(0, 100, MARGIN, getHeight() - MARGIN, ((ForecastRecord) record).getRainProbability()),
+							new Color(96, 255, 160, 192));
 	}
 	
 	private void drawErrorData(Graphics2D g)
 	{
 		if(showForecastErrorTemperature)
-			drawValueFromList(g, forecastErrorData,
+			drawValueAsLine(g, forecastErrorData,
 					record -> mapYValue(lowestTemperature, highestTemperature, record.getTemperature()), Color.RED);
 		if(showForecastErrorHumidity)
-			drawValueFromList(g, forecastErrorData,
+			drawValueAsLine(g, forecastErrorData,
 					record -> mapYValue(lowestHumidity, highestHumidity, record.getHumidity()), Color.BLUE);
 	}
 	
-	private void drawValueFromList(Graphics2D g, ArrayList<? extends Record> records,
-	                               Function<Record, Float> yFunction, Color color)
+	private void drawValueAsLine(Graphics2D g, ArrayList<? extends Record> records,
+	                             Function<Record, Float> yFunction, Color color)
 	{
 		Record lastRecord = null;
 		for(Record record : records)
@@ -214,6 +226,29 @@ public class GraphPanel extends JPanel
 				int lastY = Math.round(yFunction.apply(lastRecord));
 				g.setColor(color);
 				g.drawLine(lastX, lastY, x, y);
+			}
+			lastRecord = record;
+		}
+	}
+	
+	private void drawValueAsFill(Graphics2D g, ArrayList<? extends Record> records,
+	                             Function<Record, Float> yFunction, Color color)
+	{
+		Record lastRecord = null;
+		for(Record record : records)
+		{
+			if(!isRecordProper(record)) continue;
+			if(lastRecord != null && record.getTimeInSeconds() - lastRecord.getTimeInSeconds() < MAX_RECORDS_TIME_DIFFERENCE)
+			{
+				int x = (int) map(firstVisibleTime, lastVisibleTime, MARGIN, getWidth() - MARGIN, record.getTimeInSeconds());
+				int y = Math.round(yFunction.apply(record));
+				int lastX = (int) map(firstVisibleTime, lastVisibleTime, MARGIN, getWidth() - MARGIN, lastRecord.getTimeInSeconds());
+				int lastY = Math.round(yFunction.apply(lastRecord));
+				
+				g.setColor(color);
+				int[] xPoints = new int[] { lastX, x, x, lastX };
+				int[] yPoints = new int[] { getHeight() - lastY, getHeight() - y, getHeight(), getHeight() };
+				g.fillPolygon(xPoints, yPoints, 4);
 			}
 			lastRecord = record;
 		}
@@ -559,12 +594,12 @@ public class GraphPanel extends JPanel
 	
 	private boolean isShowingMeasurement()
 	{
-		return showMeasurementTemperature || showMeasurementHumidity;
+		return showMeasurementTemperature || showMeasurementHumidity || showMeasurementRain;
 	}
 	
 	private boolean isShowingForecast()
 	{
-		return showForecastTemperature || showForecastHumidity;
+		return showForecastTemperature || showForecastHumidity || showForecastRain;
 	}
 	
 	private boolean isShowingForecastError()
@@ -582,6 +617,11 @@ public class GraphPanel extends JPanel
 		this.showMeasurementHumidity = show;
 	}
 	
+	void setShowMeasurementRain(boolean show)
+	{
+		this.showMeasurementRain = show;
+	}
+	
 	void setShowForecastTemperature(boolean show)
 	{
 		this.showForecastTemperature = show;
@@ -590,6 +630,11 @@ public class GraphPanel extends JPanel
 	void setShowForecastHumidity(boolean show)
 	{
 		this.showForecastHumidity = show;
+	}
+	
+	void setShowForecastRain(boolean show)
+	{
+		this.showForecastRain = show;
 	}
 	
 	void setShowForecastErrorTemperature(boolean show)
