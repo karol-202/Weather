@@ -86,10 +86,15 @@ public class GraphTab
 		graph.setCurrentSourceFilter(comboBoxSource.getSelectedIndex());
 		graph.setForecastCreationTimeFilter(getForecastCreationTimeFilter());
 		graph.setForecastCreationTimeFilterNewest(radioFilterNewest.isSelected());
-		if(updateData) graph.updateData();
+		if(updateData) updateDataInNewThread();
 		graph.updateValues();
 		
 		updateScrollBar();
+	}
+	
+	private void updateDataInNewThread()
+	{
+		new Thread(() -> graph.updateData()).start();
 	}
 	
 	private int calcGraphOffset()

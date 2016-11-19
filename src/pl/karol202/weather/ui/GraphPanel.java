@@ -371,7 +371,7 @@ public class GraphPanel extends JPanel
 		{
 			int time = record.getTimeInSeconds();
 			if(newestForecastRecords.containsKey(time))
-				if(record.getCreationTimeInSeconds() >= newestForecastRecords.get(time).getCreationTimeInSeconds()) continue;
+				if(record.getCreationTimeInSeconds() <= newestForecastRecords.get(time).getCreationTimeInSeconds()) continue;
 			newestForecastRecords.put(time, record);
 		}
 	}

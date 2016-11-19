@@ -12,6 +12,7 @@ PCF8574 expander;
 long measureTime;
 long lcdUpdateTime;
 bool lightEnabled;
+byte timeZone;
 
 void setup()
 {
@@ -30,6 +31,9 @@ void setup()
   time_t time;
   EEPROM.get(addrTime, time);
   setTime(time);
+
+  int addrZone = EEPROM.length() - 8;
+  timeZone = EEPROM.read(addrZone) - 128;
 
   measureTime = now() + 10; //Czekaj 10 sekund przed pierwszym zapisem
   lcdUpdateTime = now();
@@ -121,6 +125,17 @@ void updateLCD()
 void updateLCDDate()
 {
   String date = "";
+  /*int hour = hour() + HOUR * timeZone;
+  int day = day();
+  int month = month();
+  int year = year();
+  if(hour > 23)
+  {
+    hour -= 24;
+    day++;
+  }
+  if(day*/
+    
   date += (day() < 10 ? "0" : "") + String(day()) + ".";
   date += (month() < 10 ? "0" : "") + String(month()) + ".";
   date += (year() < 10 ? "0" : "") + String(year()).substring(2) + " ";
@@ -233,7 +248,7 @@ void collectData()
 void updateTime()
 {
   toggleLED(PIN_LED_RED, true);
-  while (Serial.available() < 4) delay(10);
+  while (Serial.available() < 5) delay(10);
   int first = Serial.read();
   int second = Serial.read();
   int third = Serial.read();
@@ -241,6 +256,9 @@ void updateTime()
   time_t newTime = bytesToLong(first, second, third, fourth);
   time_t timeDifference = newTime - now();
   setTime(newTime);
+  
+  timeZone = Serial.read() - 128;
+  
   measureTime += timeDifference;
   lcdUpdateTime += timeDifference;
   toggleLED(PIN_LED_RED, false);
@@ -249,7 +267,9 @@ void updateTime()
 void saveTime()
 {
   int addrTime = EEPROM.length() - 7;
+  int addrZone = EEPROM.length() - 8;
   EEPROM.put(addrTime, now());
+  EEPROM.write(addrZone, timeZone + 128);
 }
 
 void sendData()

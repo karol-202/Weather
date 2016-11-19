@@ -21,6 +21,7 @@
 
 #define MEASURE_DELAY 1800 //30 minut
 #define LCD_DELAY 5
+#define HOUR 3600
 
 #define DEGREE_CHAR 0
 #define RAIN_0_CHAR 1

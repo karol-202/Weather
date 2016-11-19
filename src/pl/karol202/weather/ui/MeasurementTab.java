@@ -41,7 +41,7 @@ public class MeasurementTab implements ConnectionListener
 	void init()
 	{
 		measureTableModel = new MeasureRecordsTableModel();
-		spinnerNumberModel = new SpinnerNumberModel(RecordsManager.getTimeZone(), -12, 14, 0.25);
+		spinnerNumberModel = new SpinnerNumberModel(RecordsManager.getTimeZone(), -12, 14, 1);
 		initPorts();
 
 		tableMeasurement.setModel(measureTableModel);

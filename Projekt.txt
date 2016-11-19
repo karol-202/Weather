@@ -3,19 +3,21 @@
 	* time(int/unsigned long, liczba 4 bajty) - czas rekordu w sekundach
 	* temperature(int) - temperatura * 10
 	* humidity(int) - wilgotność (0.0 - 100.0) * 10
+	* rain(byte) - poziom opadów (0 - 100)
 #2. Protokół komunikacyjny:
 	A. Komunikaty:
 		1. SET_TIME(1) - komunikat presyłający aktualny czas z komputera do Arduino,
 						 na czas wykonywania którego, dioda LED jest zapalana na czerwono
-			Struktura: 1, x, x, x, x
-				x - to liczba(4 bajty) zawierająca aktualny czas w sekundach
+			Struktura: 1, x, x, x, x, z
+				x - liczba(4 bajty) zawierająca aktualny czas w sekundach
+				z - liczba(1 bajt), strefa czasowa + 128
 		2. SAVE_TIME(2) - komunikat rozkazujący Arduino zapisanie aktualnego czasu do pamięci
 			Struktura: 2
 		3. GET_DATA(3) - komunikat rozkazujący Arduino wysłanie wszystkich rekordów do komputera
 			Struktura: 3
 			Po odebraniu komunikatu przez Arduino, następuje przesłanie danych w następującym formacie:
-				n - ilość rekordów
 				n, { czas(4 bajty), temperatura * 10(4 bajty), wilogotność * 10(4 bajty) } n razy
+				n - ilość rekordów
 		4. MESSAGE_RESET(4) - komunikat rozkazujący Arduino wymazać wszystkie dane z pamięci,
 							  na czas wykonywania którego, dioda LED zapalana jest na niebiesko
 			Struktura: 4

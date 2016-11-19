@@ -2,6 +2,7 @@ package pl.karol202.weather.hardware;
 
 import gnu.io.*;
 import pl.karol202.weather.record.MeasureRecord;
+import pl.karol202.weather.record.RecordsManager;
 
 import java.io.IOException;
 import java.io.InputStream;
@@ -38,7 +39,7 @@ public class WeatherStation implements SerialPortEventListener
 		}
 	}
 	
-	public static final int MEMORY_SPACE_FOR_RECORDS = 1024 - 7;
+	public static final int MEMORY_SPACE_FOR_RECORDS = 1024 - 8;
 	public static final int MEMORY_RECORD_SIZE = 9;
 	
 	private final int TIMEOUT = 2000;
@@ -134,6 +135,7 @@ public class WeatherStation implements SerialPortEventListener
 		int time = (int) (new Date().getTime() / 1000);
 		outputStream.write(MESSAGE_SET_TIME);
 		outputStream.write(DataUtils.intToBytes(time));
+		outputStream.write((int) RecordsManager.getTimeZone() + 128);
 	}
 	
 	public void saveTime()
