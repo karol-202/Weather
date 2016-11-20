@@ -7,6 +7,8 @@ import pl.karol202.weather.ui.tabs.GraphTab;
 import pl.karol202.weather.ui.tabs.MeasurementTab;
 
 import javax.swing.*;
+import java.awt.*;
+import java.net.URL;
 
 public class FormMain extends JFrame
 {
@@ -56,6 +58,7 @@ public class FormMain extends JFrame
 		setContentPane(root);
 		pack();
 		setDefaultCloseOperation(WindowConstants.EXIT_ON_CLOSE);
+		setIconImage(getIcon());
 		setLocation(500, 200);
 		setResizable(true);
 		setVisible(true);
@@ -128,6 +131,13 @@ public class FormMain extends JFrame
 	public void updateGraph()
 	{
 		if(graphTab != null) graphTab.updateGraph();
+	}
+	
+	private Image getIcon()
+	{
+		URL url = this.getClass().getResource("/resources/icon.png");
+		Toolkit toolkit = Toolkit.getDefaultToolkit();
+		return toolkit.createImage(url);
 	}
 	
 	public static void main(String[] args)
