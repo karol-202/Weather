@@ -1,10 +1,11 @@
-package pl.karol202.weather.ui;
+package pl.karol202.weather.ui.tabs;
 
 import pl.karol202.weather.hardware.ConnectionListener;
 import pl.karol202.weather.hardware.PortsManager;
 import pl.karol202.weather.hardware.WeatherStation;
 import pl.karol202.weather.record.MeasureRecord;
 import pl.karol202.weather.record.RecordsManager;
+import pl.karol202.weather.ui.FormMain;
 import pl.karol202.weather.ui.table.model.MeasureRecordsTableModel;
 import pl.karol202.weather.ui.table.renderer.DateCellRenderer;
 import pl.karol202.weather.ui.table.renderer.UnitCellRenderer;
@@ -33,12 +34,12 @@ public class MeasurementTab implements ConnectionListener
 	private JProgressBar progressBarMemory;
 	private JSpinner spinnerTimeZone;
 	
-	MeasurementTab(FormMain parent)
+	public MeasurementTab(FormMain parent)
 	{
 		this.parent = parent;
 	}
 	
-	void init()
+	public void init()
 	{
 		measureTableModel = new MeasureRecordsTableModel();
 		spinnerNumberModel = new SpinnerNumberModel(RecordsManager.getTimeZone(), -12, 14, 1);
@@ -198,52 +199,52 @@ public class MeasurementTab implements ConnectionListener
 		progressBarMemory.setValue(newRecords.size() * WeatherStation.MEMORY_RECORD_SIZE);
 	}
 	
-	void setTableMeasurement(JTable tableMeasurement)
+	public void setTableMeasurement(JTable tableMeasurement)
 	{
 		this.tableMeasurement = tableMeasurement;
 	}
 	
-	void setButtonSetTime(JButton buttonSetTime)
+	public void setButtonSetTime(JButton buttonSetTime)
 	{
 		this.buttonSetTime = buttonSetTime;
 	}
 	
-	void setButtonSaveTime(JButton buttonSaveTime)
+	public void setButtonSaveTime(JButton buttonSaveTime)
 	{
 		this.buttonSaveTime = buttonSaveTime;
 	}
 	
-	void setButtonGetData(JButton buttonGetData)
+	public void setButtonGetData(JButton buttonGetData)
 	{
 		this.buttonGetData = buttonGetData;
 	}
 	
-	void setButtonReset(JButton buttonReset)
+	public void setButtonReset(JButton buttonReset)
 	{
 		this.buttonReset = buttonReset;
 	}
 	
-	void setButtonConnect(JButton buttonConnect)
+	public void setButtonConnect(JButton buttonConnect)
 	{
 		this.buttonConnect = buttonConnect;
 	}
 	
-	void setButtonRefresh(JButton buttonRefresh)
+	public void setButtonRefresh(JButton buttonRefresh)
 	{
 		this.buttonRefresh = buttonRefresh;
 	}
 	
-	void setComboBoxPort(JComboBox<String> comboBoxPort)
+	public void setComboBoxPort(JComboBox<String> comboBoxPort)
 	{
 		this.comboBoxPort = comboBoxPort;
 	}
 	
-	void setProgressBarMemory(JProgressBar progressBarMemory)
+	public void setProgressBarMemory(JProgressBar progressBarMemory)
 	{
 		this.progressBarMemory = progressBarMemory;
 	}
 	
-	void setSpinnerTimeZone(JSpinner spinnerTimeZone)
+	public void setSpinnerTimeZone(JSpinner spinnerTimeZone)
 	{
 		this.spinnerTimeZone = spinnerTimeZone;
 	}

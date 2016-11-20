@@ -1,6 +1,7 @@
-package pl.karol202.weather.ui;
+package pl.karol202.weather.ui.tabs;
 
 import pl.karol202.weather.record.RecordsManager;
+import pl.karol202.weather.ui.graph.Graph;
 
 import javax.swing.*;
 import javax.swing.text.DateFormatter;
@@ -12,8 +13,9 @@ public class GraphTab
 {
 	private SpinnerNumberModel spinnerModelNumber;
 	private DateFormatter dateFormatter;
+	private Thread dataUpdateThread;
 	
-	private GraphPanel graph;
+	private Graph graph;
 	private JScrollBar scrollBarOffset;
 	private JSpinner spinnerScale;
 	private JCheckBox checkBoxMeasurementTemperature;
@@ -29,7 +31,7 @@ public class GraphTab
 	private JRadioButton radioFilterManual;
 	private JRadioButton radioFilterNewest;
 	
-	void init()
+	public void init()
 	{
 		spinnerModelNumber = new SpinnerNumberModel(5, 1, 100, 1);
 		dateFormatter = new DateFormatter(DateFormat.getDateTimeInstance());
@@ -94,7 +96,9 @@ public class GraphTab
 	
 	private void updateDataInNewThread()
 	{
-		new Thread(() -> graph.updateData()).start();
+		if(dataUpdateThread != null && dataUpdateThread.isAlive()) dataUpdateThread.interrupt();
+		dataUpdateThread = new Thread(() -> graph.updateData());
+		dataUpdateThread.start();
 	}
 	
 	private int calcGraphOffset()
@@ -145,7 +149,7 @@ public class GraphTab
 		updateGraph(false);
 	}
 	
-	public void setGraph(GraphPanel graph)
+	public void setGraph(Graph graph)
 	{
 		this.graph = graph;
 	}

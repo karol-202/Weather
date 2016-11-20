@@ -125,22 +125,12 @@ void updateLCD()
 void updateLCDDate()
 {
   String date = "";
-  /*int hour = hour() + HOUR * timeZone;
-  int day = day();
-  int month = month();
-  int year = year();
-  if(hour > 23)
-  {
-    hour -= 24;
-    day++;
-  }
-  if(day*/
-    
-  date += (day() < 10 ? "0" : "") + String(day()) + ".";
-  date += (month() < 10 ? "0" : "") + String(month()) + ".";
-  date += (year() < 10 ? "0" : "") + String(year()).substring(2) + " ";
-  date += (hour() < 10 ? "0" : "") + String(hour()) + ":";
-  date += (minute() < 10 ? "0" : "") + String(minute());// + ":";
+  time_t localTime = now() + HOUR * timeZone;
+  date += (day(localTime) < 10 ? "0" : "") + String(day(localTime)) + ".";
+  date += (month(localTime) < 10 ? "0" : "") + String(month(localTime)) + ".";
+  date += (year(localTime) < 10 ? "0" : "") + String(year(localTime)).substring(2) + " ";
+  date += (hour(localTime) < 10 ? "0" : "") + String(hour(localTime)) + ":";
+  date += (minute(localTime) < 10 ? "0" : "") + String(minute(localTime));// + ":";
   //date += (second() < 10 ? "0" : "") + String(second());
 
   lcd.setCursor(0, 0);

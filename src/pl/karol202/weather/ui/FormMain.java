@@ -1,6 +1,10 @@
 package pl.karol202.weather.ui;
 
 import pl.karol202.weather.record.RecordsManager;
+import pl.karol202.weather.ui.graph.Graph;
+import pl.karol202.weather.ui.tabs.ForecastTab;
+import pl.karol202.weather.ui.tabs.GraphTab;
+import pl.karol202.weather.ui.tabs.MeasurementTab;
 
 import javax.swing.*;
 
@@ -29,7 +33,7 @@ public class FormMain extends JFrame
 	private JButton buttonEditSource;
 	private JButton buttonDeleteSource;
 	
-	private GraphPanel graph;
+	private Graph graph;
 	private JScrollBar scrollBarOffset;
 	private JCheckBox checkBoxMeasurementTemperature;
 	private JCheckBox checkBoxMeasurementHumidity;

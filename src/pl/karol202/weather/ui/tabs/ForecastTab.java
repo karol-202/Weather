@@ -1,7 +1,8 @@
-package pl.karol202.weather.ui;
+package pl.karol202.weather.ui.tabs;
 
 import pl.karol202.weather.record.ForecastRecord;
 import pl.karol202.weather.record.RecordsManager;
+import pl.karol202.weather.ui.FormMain;
 import pl.karol202.weather.ui.table.editor.DateCellEditor;
 import pl.karol202.weather.ui.table.editor.ForecastSourceCellEditor;
 import pl.karol202.weather.ui.table.editor.IntegerCellEditor;
@@ -57,12 +58,12 @@ public class ForecastTab
 	private JButton buttonEditSource;
 	private JButton buttonDeleteSource;
 	
-	ForecastTab(FormMain parent)
+	public ForecastTab(FormMain parent)
 	{
 		this.parent = parent;
 	}
 	
-	void init()
+	public void init()
 	{
 		forecastTableModel = new ForecastRecordsTableModel();
 		forecastTableModel.addListener(() -> parent.updateGraph());
@@ -274,32 +275,32 @@ public class ForecastTab
 			throw new RuntimeException("Cannot delete this filter.");
 	}
 	
-	void setTableForecast(JTable tableForecast)
+	public void setTableForecast(JTable tableForecast)
 	{
 		this.tableForecast = tableForecast;
 	}
 	
-	void setButtonAddRecord(JButton buttonAddRecord)
+	public void setButtonAddRecord(JButton buttonAddRecord)
 	{
 		this.buttonAddRecord = buttonAddRecord;
 	}
 	
-	void setComboBoxSources(JComboBox<String> comboBoxSources)
+	public void setComboBoxSources(JComboBox<String> comboBoxSources)
 	{
 		this.comboBoxSources = comboBoxSources;
 	}
 	
-	void setButtonAddSource(JButton buttonAddSource)
+	public void setButtonAddSource(JButton buttonAddSource)
 	{
 		this.buttonAddSource = buttonAddSource;
 	}
 	
-	void setButtonEditSource(JButton buttonEditSource)
+	public void setButtonEditSource(JButton buttonEditSource)
 	{
 		this.buttonEditSource = buttonEditSource;
 	}
 	
-	void setButtonDeleteSource(JButton buttonDeleteSource)
+	public void setButtonDeleteSource(JButton buttonDeleteSource)
 	{
 		this.buttonDeleteSource = buttonDeleteSource;
 	}
