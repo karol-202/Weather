@@ -15,6 +15,7 @@ import java.awt.event.KeyEvent;
 import java.awt.event.KeyListener;
 import java.util.ArrayList;
 import java.util.Date;
+import java.util.List;
 
 public class MeasurementTab implements ConnectionListener
 {
@@ -164,13 +165,6 @@ public class MeasurementTab implements ConnectionListener
 	}
 	
 	@Override
-	public void onPortInUse()
-	{
-		JOptionPane.showMessageDialog(parent, "Port jest aktualnie w użyciu.", "Błąd", JOptionPane.ERROR_MESSAGE);
-		disconnect();
-	}
-	
-	@Override
 	public void onError(String message)
 	{
 		JOptionPane.showMessageDialog(parent, "Błąd: " + message, "Błąd", JOptionPane.ERROR_MESSAGE);
@@ -185,7 +179,7 @@ public class MeasurementTab implements ConnectionListener
 	}
 	
 	@Override
-	public void onDataReceive(ArrayList<MeasureRecord> newRecords)
+	public void onDataReceive(List<MeasureRecord> newRecords)
 	{
 		ArrayList<MeasureRecord> records = RecordsManager.getMeasureRecords();
 		newRecords.forEach(newRec ->

@@ -6,12 +6,12 @@ import java.nio.ByteBuffer;
 
 public class DataUtils
 {
-	public static int readInt(InputStream stream) throws IOException
+	public static int bytesToInt(byte[] bytes)
 	{
-		return (stream.read()        & 0xff) |
-			  ((stream.read() << 8 ) & 0xff00) |
-			  ((stream.read() << 16) & 0xff0000) |
-			  ((stream.read() << 24) & 0xff000000);
+		return (bytes[0]        & 0xff)     |
+			  ((bytes[1] << 8 ) & 0xff00)   |
+			  ((bytes[2] << 16) & 0xff0000) |
+			  ((bytes[3] << 24) & 0xff000000);
 	}
 	
 	public static byte[] intToBytes(int number)
@@ -24,7 +24,7 @@ public class DataUtils
 		return bytes;
 	}
 	
-	public static float bytesToFloat(byte[] bytes) throws IOException
+	public static float bytesToFloat(byte[] bytes)
 	{
 		return ByteBuffer.wrap(bytes).getFloat();
 	}

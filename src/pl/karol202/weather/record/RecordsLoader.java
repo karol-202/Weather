@@ -31,12 +31,12 @@ public class RecordsLoader
 	private static void loadMeasureRecords(ArrayList<MeasureRecord> records) throws IOException
 	{
 		records.clear();
-		int length = DataUtils.readInt(inputStream);
+		int length = readInt();
 		for(int i = 0; i < length; i++)
 		{
-			int time = DataUtils.readInt(inputStream);
-			float temperature = DataUtils.readInt(inputStream) / 10f;
-			float humidity = DataUtils.readInt(inputStream) / 10f;
+			int time = readInt();
+			float temperature = readInt() / 10f;
+			float humidity = readInt() / 10f;
 			int rain = readByte();
 			records.add(new MeasureRecord(time, temperature, humidity, rain));
 		}
@@ -45,14 +45,14 @@ public class RecordsLoader
 	private static void loadForecastRecords(ArrayList<ForecastRecord> records) throws IOException
 	{
 		records.clear();
-		int length = DataUtils.readInt(inputStream);
+		int length = readInt();
 		for(int i = 0; i < length; i++)
 		{
-			int time = DataUtils.readInt(inputStream);
-			int creationTime = DataUtils.readInt(inputStream);
+			int time = readInt();
+			int creationTime = readInt();
 			int forecastSource = readByte();
-			float temperature = DataUtils.readInt(inputStream) / 10f;
-			float humidity = DataUtils.readInt(inputStream) / 10f;
+			float temperature = readInt() / 10f;
+			float humidity = readInt() / 10f;
 			int rain = readByte();
 			records.add(new ForecastRecord(time, creationTime, forecastSource, temperature, humidity, rain));
 		}
@@ -88,5 +88,13 @@ public class RecordsLoader
 		int bytesRead = inputStream.read(bytes, 0, length);
 		if(bytesRead != length) throw new RuntimeException("File reading error: Cannot read bytes array, bytes length: " + bytesRead);
 		return bytes;
+	}
+
+	private static int readInt() throws IOException
+	{
+		byte[] buffer = new byte[4];
+		int result = inputStream.read(buffer);
+		if(result != 4) throw new RuntimeException("File reading error: Cannot read int, bytes length: " + result);
+		return DataUtils.bytesToInt(buffer);
 	}
 }

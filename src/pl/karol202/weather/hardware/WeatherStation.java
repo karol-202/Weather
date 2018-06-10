@@ -1,41 +1,68 @@
 package pl.karol202.weather.hardware;
 
-import gnu.io.*;
+import com.fazecast.jSerialComm.SerialPort;
+import com.fazecast.jSerialComm.SerialPortDataListener;
+import com.fazecast.jSerialComm.SerialPortEvent;
 import pl.karol202.weather.record.MeasureRecord;
 import pl.karol202.weather.record.RecordsManager;
 
 import java.io.IOException;
-import java.io.InputStream;
-import java.io.OutputStream;
 import java.util.ArrayList;
 import java.util.Date;
+import java.util.List;
 
-public class WeatherStation implements SerialPortEventListener
+public class WeatherStation implements SerialPortDataListener
 {
-	private class WaitForData implements Runnable
+	private static class Timeout implements Runnable
 	{
+		interface TimeoutListener
+		{
+			void onTimeout();
+		}
+
+		private int timeout;
+		private TimeoutListener listener;
+
+		private boolean waiting;
+
+		Timeout(int timeout, TimeoutListener listener)
+		{
+			this.timeout = timeout;
+			this.listener = listener;
+		}
+
 		@Override
 		public void run()
 		{
+			waiting = true;
 			try
 			{
-				waitForData();
+				waitAndCheck();
 			}
 			catch(InterruptedException e)
 			{
 				e.printStackTrace();
-				listener.onError(e.getMessage());
 			}
 		}
 		
-		private void waitForData() throws InterruptedException
+		private void waitAndCheck() throws InterruptedException
 		{
-			Thread.sleep(TIMEOUT);
-			if(waitForData)
+			Thread.sleep(timeout);
+			if(waiting)
 			{
-				listener.onDataReceiveTimeout();
-				waitForData = false;
+				listener.onTimeout();
+				waiting = false;
 			}
+		}
+
+		boolean isWaiting()
+		{
+			return waiting;
+		}
+
+		void stop()
+		{
+			waiting = false;
 		}
 	}
 	
@@ -44,57 +71,30 @@ public class WeatherStation implements SerialPortEventListener
 	
 	private final int TIMEOUT = 2000;
 	private final int BAUD_RATE = 9600;
-	private final int DATA_BITS = SerialPort.DATABITS_8;
-	private final int STOP_BITS = SerialPort.STOPBITS_1;
-	private final int PARITY = SerialPort.PARITY_NONE;
+	private final int DATA_BITS = 8;
+	private final int STOP_BITS = SerialPort.ONE_STOP_BIT;
+	private final int PARITY = SerialPort.NO_PARITY;
 	
 	private final int MESSAGE_SET_TIME = 1;
 	private final int MESSAGE_SAVE_TIME = 2;
 	private final int MESSAGE_GET_DATA = 3;
 	private final int MESSAGE_RESET = 4;
-	
-	private CommPortIdentifier portId;
+
 	private SerialPort port;
-	private InputStream inputStream;
-	private OutputStream outputStream;
 	private ConnectionListener listener;
-	private boolean waitForData;
+	private Timeout timeout;
 	
-	public WeatherStation(CommPortIdentifier portId, ConnectionListener listener)
+	public WeatherStation(SerialPort port, ConnectionListener listener)
 	{
-		this.portId = portId;
+		this.port = port;
 		this.listener = listener;
+		this.timeout = new Timeout(TIMEOUT, () -> {
+			if(listener != null) listener.onDataReceiveTimeout();
+		});
+
 		try
 		{
 			connect();
-		}
-		catch(PortInUseException e)
-		{
-			e.printStackTrace();
-			if(listener != null) listener.onPortInUse();
-		}
-		catch(Exception e)
-		{
-			e.printStackTrace();
-			if(listener != null) listener.onError(e.getMessage());
-		}
-	}
-	
-	private void connect() throws Exception
-	{
-		port = (SerialPort) portId.open("Weather", TIMEOUT);
-		port.setSerialPortParams(BAUD_RATE, DATA_BITS, STOP_BITS, PARITY);
-		inputStream = port.getInputStream();
-		outputStream = port.getOutputStream();
-		port.addEventListener(this);
-		port.notifyOnDataAvailable(true);
-	}
-	
-	public void disconnect()
-	{
-		try
-		{
-			tryDisconnect();
 		}
 		catch(IOException e)
 		{
@@ -103,127 +103,107 @@ public class WeatherStation implements SerialPortEventListener
 		}
 	}
 	
-	private void tryDisconnect() throws IOException
+	private void connect() throws IOException
 	{
-		inputStream.close();
-		outputStream.close();
-		port.removeEventListener();
-		port.close();
+		port.setBaudRate(BAUD_RATE);
+		port.setNumDataBits(DATA_BITS);
+		port.setNumStopBits(STOP_BITS);
+		port.setParity(PARITY);
+		if(!port.openPort()) throw new IOException("Cannot open port");
+		port.addDataListener(this);
 	}
 	
-	public void checkConnection(ArrayList<CommPortIdentifier> allPorts)
+	public void disconnect()
 	{
-		if(allPorts.stream().map(CommPortIdentifier::getName).noneMatch(name -> name.equals(portId.getName())))
+		port.removeDataListener();
+		port.closePort();
+	}
+	
+	public void checkConnection(List<SerialPort> allPorts)
+	{
+		if(allPorts.stream().noneMatch(p -> p.getSystemPortName().equals(port.getSystemPortName())))
 			listener.onError("Połączenie zostało zerwane");
 	}
 	
 	public void setTime()
 	{
-		try
-		{
-			sendSetTime();
-		}
-		catch(IOException e)
-		{
-			e.printStackTrace();
-			if(listener != null) listener.onError(e.getMessage());
-		}
-	}
-	
-	private void sendSetTime() throws IOException
-	{
 		int time = (int) (new Date().getTime() / 1000);
-		outputStream.write(MESSAGE_SET_TIME);
-		outputStream.write(DataUtils.intToBytes(time));
-		outputStream.write((int) RecordsManager.getTimeZone() + 128);
+		write(MESSAGE_SET_TIME);
+		write(DataUtils.intToBytes(time));
+		write((int) RecordsManager.getTimeZone() + 128);
 	}
 	
 	public void saveTime()
 	{
-		try
-		{
-			sendSaveTime();
-		}
-		catch(IOException e)
-		{
-			e.printStackTrace();
-			if(listener != null) listener.onError(e.getMessage());
-		}
-	}
-	
-	private void sendSaveTime() throws IOException
-	{
-		outputStream.write(MESSAGE_SAVE_TIME);
+		write(MESSAGE_SAVE_TIME);
 	}
 	
 	public void getData()
 	{
-		try
-		{
-			getDataInternal();
-		}
-		catch(IOException e)
-		{
-			e.printStackTrace();
-			if(listener != null) listener.onError(e.getMessage());
-		}
-	}
-	
-	private void getDataInternal() throws IOException
-	{
-		outputStream.write(MESSAGE_GET_DATA);
-		waitForData = true;
-		new Thread(new WaitForData()).start();
+		write(MESSAGE_GET_DATA);
+		new Thread(timeout).start();
 	}
 	
 	public void reset()
 	{
-		try
-		{
-			sendReset();
-		}
-		catch(IOException e)
-		{
-			e.printStackTrace();
-			if(listener != null) listener.onError(e.getMessage());
-		}
+		write(MESSAGE_RESET);
 	}
-	
-	private void sendReset() throws IOException
-	{
-		outputStream.write(MESSAGE_RESET);
-	}
-	
+
 	@Override
-	public void serialEvent(SerialPortEvent event)
+	public int getListeningEvents()
 	{
-		if(event.getEventType() != SerialPortEvent.DATA_AVAILABLE || !waitForData) return;
-		try
-		{
-			collectData();
-		}
-		catch(IOException e)
-		{
-			e.printStackTrace();
-			if(listener != null) listener.onError(e.getMessage());
-		}
+		return SerialPort.LISTENING_EVENT_DATA_AVAILABLE;
 	}
-	
-	private void collectData() throws IOException
+
+	@Override
+	public void serialEvent(SerialPortEvent serialPortEvent)
 	{
-		waitForData = false;
-		ArrayList<MeasureRecord> records = new ArrayList<>();
-		int length = inputStream.read();
-		for(int i = 0; i < length; i++) readRecord(records);
+		if(timeout.isWaiting()) collectData();
+	}
+
+	private void collectData()
+	{
+		List<MeasureRecord> records = new ArrayList<>();
+		int length = read();
+		for(int i = 0; i < length; i++) records.add(readRecord());
+		timeout.stop();
 		listener.onDataReceive(records);
 	}
-	
-	private void readRecord(ArrayList<MeasureRecord> records) throws IOException
+
+	private MeasureRecord readRecord()
 	{
-		int time = DataUtils.readInt(inputStream);
-		float temperature = DataUtils.readInt(inputStream) / 10f;
-		float humidity = DataUtils.readInt(inputStream) / 10f;
-		int rain = inputStream.read();
-		records.add(new MeasureRecord(time, temperature, humidity, rain));
+		int time = readInt();
+		float temperature = readInt() / 10f;
+		float humidity = readInt() / 10f;
+		int rain = read();
+		return new MeasureRecord(time, temperature, humidity, rain);
+	}
+
+	private byte read()
+	{
+		while(timeout.isWaiting() && port.bytesAvailable() < 1) Thread.yield();
+
+		byte[] buffer = new byte[1];
+		port.readBytes(buffer, 1);
+		return buffer[0];
+	}
+
+	private int readInt()
+	{
+		while(timeout.isWaiting() && port.bytesAvailable() < 4) Thread.yield();
+
+		byte[] buffer = new byte[4];
+		port.readBytes(buffer, 4);
+		return DataUtils.bytesToInt(buffer);
+	}
+
+	private void write(int b)
+	{
+		port.writeBytes(new byte[] { (byte) b }, 1);
+	}
+
+	private void write(byte[] bytes)
+	{
+		port.writeBytes(bytes, bytes.length);
 	}
 }

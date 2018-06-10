@@ -1,33 +1,33 @@
 package pl.karol202.weather.hardware;
 
-import gnu.io.CommPortIdentifier;
+import com.fazecast.jSerialComm.SerialPort;
 
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.Enumeration;
+import java.util.List;
 
 public class PortsManager
 {
-	private static ArrayList<CommPortIdentifier> ports = new ArrayList<>();
+	private static List<SerialPort> ports = new ArrayList<>();
 
 	public static void refreshPorts()
 	{
-		ports.clear();
-		Enumeration portsEnum = CommPortIdentifier.getPortIdentifiers();
-		while(portsEnum.hasMoreElements())
-			ports.add((CommPortIdentifier) portsEnum.nextElement());
+		SerialPort[] portsArray = SerialPort.getCommPorts();
+		ports = Arrays.asList(portsArray);
 	}
 	
 	public static String[] getPortsNames()
 	{
-		return ports.stream().map(CommPortIdentifier::getName).toArray(String[]::new);
+		return ports.stream().map(SerialPort::getSystemPortName).toArray(String[]::new);
 	}
 	
-	public static CommPortIdentifier getPortByName(String name)
+	public static SerialPort getPortByName(String name)
 	{
-		return ports.stream().filter(port -> port.getName().equals(name)).findFirst().orElse(null);
+		return ports.stream().filter(port -> port.getSystemPortName().equals(name)).findFirst().orElse(null);
 	}
 	
-	public static ArrayList<CommPortIdentifier> getPorts()
+	public static List<SerialPort> getPorts()
 	{
 		return ports;
 	}
