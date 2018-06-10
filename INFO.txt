@@ -1,8 +1,0 @@
-This work is licensed under a
-Creative Commons Attribution-NonCommercial-ShareAlike 4.0 International License.
-
-App icon was made by Martz90 and downloaded from IconArchive
-on licence CC Attribution-Noncommercial-No Derivate 4.0.
-
-RXTX binary builds provided as a courtesy of Mfizz Inc. (http://mfizz.com/).
-Please see http://mfizz.com/oss/rxtx-for-java for more information.
